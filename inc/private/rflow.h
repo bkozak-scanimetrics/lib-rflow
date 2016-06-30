@@ -16,45 +16,24 @@
 * You should have received a copy of the GNU General Public License           *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
-#ifndef LIB_RFLOW_H_
-#define LIB_RFLOW_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef RFLOW_H_
+#define RFLOW_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
+#include "lib-rflow.h"
+
 #include <stdlib.h>
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-struct rf_init {
-	int amp_bin_count;
-	int mean_bin_count;
-
-	double mean_min;
-	double amp_min;
+struct rf_state {
+private:
+	struct rf_matrix *const matrix;
+public:
+	rf_state(struct rf_matrix *matrix);
+	void count(const double *points, size_t num);
+	struct rf_matrix* get_matrix(void);
 };
 /*****************************************************************************/
-struct rf_matrix {
-	int      amp_bin_count;
-	int      mean_bin_count;
-	double   mean_min;
-	double   amp_min;
-
-	unsigned *bins;
-};
-/*****************************************************************************/
-struct rf_state;
-/******************************************************************************
-*                             FUNCTION PROTOTYPES                             *
-******************************************************************************/
-struct rf_state* lib_rflow_init(const struct rf_init *init);
-int lib_rflow_count(struct rf_state *state, const double *points, size_t num);
-struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state);
-void lib_rflow_destroy(struct rf_state *state);
-/*****************************************************************************/
-#ifdef __cplusplus
-}
-#endif
-#endif /* LIB_RFLOW_H_ */
+#endif /* RFLOW_H_ */

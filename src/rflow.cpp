@@ -16,45 +16,26 @@
 * You should have received a copy of the GNU General Public License           *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
-#ifndef LIB_RFLOW_H_
-#define LIB_RFLOW_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include <stdlib.h>
-/******************************************************************************
-*                                    TYPES                                    *
-******************************************************************************/
-struct rf_init {
-	int amp_bin_count;
-	int mean_bin_count;
+#include "private/rflow.h"
 
-	double mean_min;
-	double amp_min;
-};
-/*****************************************************************************/
-struct rf_matrix {
-	int      amp_bin_count;
-	int      mean_bin_count;
-	double   mean_min;
-	double   amp_min;
-
-	unsigned *bins;
-};
-/*****************************************************************************/
-struct rf_state;
+#include "lib-rflow.h"
 /******************************************************************************
-*                             FUNCTION PROTOTYPES                             *
+*                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
-struct rf_state* lib_rflow_init(const struct rf_init *init);
-int lib_rflow_count(struct rf_state *state, const double *points, size_t num);
-struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state);
-void lib_rflow_destroy(struct rf_state *state);
-/*****************************************************************************/
-#ifdef __cplusplus
+rf_state::rf_state(struct rf_matrix *matrix)
+: matrix{matrix}
+{
 }
-#endif
-#endif /* LIB_RFLOW_H_ */
+/*****************************************************************************/
+void rf_state::count(const double *points, size_t num)
+{
+}
+/*****************************************************************************/
+struct rf_matrix* rf_state::get_matrix(void)
+{
+	return matrix;
+}
+/*****************************************************************************/

@@ -20,36 +20,67 @@
 *                                  INCLUDES                                   *
 ******************************************************************************/
 #include "lib-rflow.h"
+
+#include "private/rflow.h"
+
+#include <new>
+#include <stdlib.h>
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-struct rf_state {
-	unsigned dummy;
+struct matrix_mem {
+	struct rf_matrix matrix;
+	unsigned bins[];
 };
 /******************************************************************************
 *                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
 extern "C"
-struct rf_state* lib_rflow_init(int amp_bin_count, int mean_bin_count)
+struct rf_state* lib_rflow_init(const struct rf_init *init)
 {
+	size_t cells = init->amp_bin_count * init->mean_bin_count;
+
+	struct matrix_mem *m = (struct matrix_mem*)malloc(
+		sizeof(struct rf_matrix) + cells * sizeof(m->bins[0])
+	);
+	if(m == NULL) {
+		goto fail;
+	}
+
+	m->matrix.amp_bin_count  = init->amp_bin_count;
+	m->matrix.mean_bin_count = init->mean_bin_count;
+	m->matrix.mean_min       = init->mean_min;
+	m->matrix.amp_min        = init->amp_min;
+
+	m->matrix.bins            = m->bins;
+
+	try {
+		return new rf_state(&m->matrix);
+	} catch(std::bad_alloc& exc) {
+		goto fail;
+	}
+
+fail:
+	free(m);
 	return NULL;
 }
 /*****************************************************************************/
 extern "C"
 int lib_rflow_count(struct rf_state *state, const double *points, size_t num)
 {
+	state->count(points, num);
 	return 0;
 }
 /*****************************************************************************/
 extern "C"
 struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state)
 {
-	return NULL;
+	return state->get_matrix();
 }
 /*****************************************************************************/
 extern "C"
-int lib_rflow_destroy(struct rf_state *state)
+void lib_rflow_destroy(struct rf_state *state)
 {
-	return 0;
+	delete state;
 }
 /*****************************************************************************/
