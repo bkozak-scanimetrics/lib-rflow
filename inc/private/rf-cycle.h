@@ -16,27 +16,37 @@
 * You should have received a copy of the GNU General Public License           *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
-/******************************************************************************
-*                                  INCLUDES                                   *
-******************************************************************************/
-#include "private/rflow.h"
+#ifndef CYCLE_H_
+#define CYCLE_H_
 
-#include "lib-rflow.h"
 /******************************************************************************
-*                            FUNCTION DEFINITIONS                             *
+*                                    TYPES                                    *
 ******************************************************************************/
-rf_state::rf_state(struct rf_matrix *matrix)
-: matrix{matrix}
-{
+enum cycle_direction{TO_NEGATIVE, TO_POSITIVE};
 
-}
+class rf_cycle {
+private:
+	const double cycle_start;
+	const enum cycle_direction direction;
+
+	bool    terminated;
+	double  cycle_end;
+	int     half_cycles;
+public:
+	rf_cycle(double cycle_start, enum cycle_direction dir);
+
+	void terminate(void);
+	void merge(rf_cycle *other);
+	bool extend(double p);
+
+	bool needs_merge(const rf_cycle &that) const;
+	double magnitude(void) const;
+	double mean(void) const;
+
+	bool is_terminated(void) const;
+	double get_cycle_start(void) const;
+	double get_cycle_end(void) const;
+	int get_half_cycles(void) const;
+};
 /*****************************************************************************/
-void rf_state::count(const double *points, size_t num)
-{
-}
-/*****************************************************************************/
-struct rf_matrix* rf_state::get_matrix(void)
-{
-	return matrix;
-}
-/*****************************************************************************/
+#endif /* CYCLE_H_ */

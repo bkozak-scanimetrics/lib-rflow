@@ -19,24 +19,88 @@
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "private/rflow.h"
+#include "private/rf-cycle.h"
 
-#include "lib-rflow.h"
+#include <assert.h>
+
+#include <cmath>
 /******************************************************************************
-*                            FUNCTION DEFINITIONS                             *
+*                               PUBLIC METHODS                                *
 ******************************************************************************/
-rf_state::rf_state(struct rf_matrix *matrix)
-: matrix{matrix}
+rf_cycle::rf_cycle(double cycle_start, enum cycle_direction dir)
+: cycle_start{cycle_start}, direction{dir}
 {
+	terminated  = false;
+	cycle_end   = cycle_start;
+	half_cycles = 1;
+}
+/*****************************************************************************/
+void rf_cycle::terminate(void)
+{
+	terminated = true;
+}
+/*****************************************************************************/
+void rf_cycle::merge(rf_cycle *that)
+{
+	assert(!this->terminated);
+	assert(this->needs_merge(*that));
 
+	that->terminate();
+	this->half_cycles += that->half_cycles;
 }
 /*****************************************************************************/
-void rf_state::count(const double *points, size_t num)
+bool rf_cycle::extend(double p)
 {
+	assert(!terminated);
+	cycle_end = p;
+
+	terminated = (
+		direction == TO_NEGATIVE ?
+		this->cycle_start < p :
+		this->cycle_start > p
+	);
+
+	return terminated;
 }
 /*****************************************************************************/
-struct rf_matrix* rf_state::get_matrix(void)
+bool rf_cycle::needs_merge(const rf_cycle &that) const
 {
-	return matrix;
+	assert(!this->terminated);
+
+	return (
+		direction == TO_NEGATIVE ?
+		this->cycle_start > that.cycle_start :
+		this->cycle_start < that.cycle_start
+	);
+}
+/*****************************************************************************/
+double rf_cycle::magnitude(void) const
+{
+	return std::abs(cycle_start - cycle_end);
+}
+/*****************************************************************************/
+double rf_cycle::mean(void) const
+{
+	return (cycle_start - cycle_end) / 2.0;
+}
+/*****************************************************************************/
+int rf_cycle::get_half_cycles(void) const
+{
+	return half_cycles;
+}
+/*****************************************************************************/
+bool rf_cycle::is_terminated(void) const
+{
+	return terminated;
+}
+/*****************************************************************************/
+double rf_cycle::get_cycle_start(void) const
+{
+	return cycle_start;
+}
+/*****************************************************************************/
+double rf_cycle::get_cycle_end(void) const
+{
+	return cycle_end;
 }
 /*****************************************************************************/
