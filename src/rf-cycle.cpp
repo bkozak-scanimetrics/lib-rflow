@@ -52,26 +52,39 @@ void rf_cycle::merge(rf_cycle *that)
 bool rf_cycle::extend(double p)
 {
 	assert(!terminated);
-	cycle_end = p;
 
-	terminated = (
-		direction == TO_NEGATIVE ?
-		this->cycle_start < p :
-		this->cycle_start > p
-	);
+	if(direction == TO_NEGATIVE) {
+		if(p < cycle_end) {
+			cycle_end = p;
+		} else if(cycle_start < p) {
+			terminate();
+		}
+	} else {
+		if(p > cycle_end) {
+			cycle_end = p;
+		} else if(cycle_start > p) {
+			terminate();
+		}
+	}
 
-	return terminated;
+	return is_terminated();
 }
 /*****************************************************************************/
 bool rf_cycle::needs_merge(const rf_cycle &that) const
 {
 	assert(!this->terminated);
 
-	return (
-		direction == TO_NEGATIVE ?
-		this->cycle_start > that.cycle_start :
-		this->cycle_start < that.cycle_start
-	);
+	if(direction == TO_NEGATIVE) {
+		return (
+			this->cycle_start > that.cycle_start &&
+			this->cycle_end <= that.cycle_end
+		);
+	} else {
+		return (
+			this->cycle_start < that.cycle_start &&
+			this->cycle_end >= that.cycle_end
+		);
+	}
 }
 /*****************************************************************************/
 double rf_cycle::magnitude(void) const
