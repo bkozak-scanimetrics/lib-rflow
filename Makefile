@@ -121,9 +121,14 @@ $(ASM_GEN): $(ASM_GEN_DIR)/%.s : %.c | $(ASM_GEN_DIR)/.dir_dummy
 $(BINARY): $(OBJ_FILES) | $(EXE_DIR)/.dir_dummy
 	$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
 
-$(DEBUG_TEST): debug $(TEST_SOURCE)
+$(DEBUG_TEST): CFLAGS += -DDEBUG=1 -g
+$(DEBUG_TEST): LDFLAGS += -g
+$(DEBUG_TEST): $(TEST_SOURCE) $(BINARY)
 	$(CC) $(TEST_CFLAGS) $(TEST_SOURCE) -l:$(BINARY) -o $(DEBUG_TEST)
-$(RELEASE_TEST): optomized $(TEST_SOURCE)
+
+$(RELEASE_TEST): CFLAGS += -DNDEBUG=1 -march=native -g -Os -flto
+$(RELEASE_TEST): LDFLAGS += -march=native -g -Os -flto
+$(RELEASE_TEST): $(TEST_SOURCE) $(BINARY)
 	$(CC) $(TEST_CFLAGS) $(TEST_SOURCE) -l:$(BINARY) -o $(RELEASE_TEST)
 
 clean:
