@@ -91,13 +91,13 @@ bool rf_state::peak_valley_transition(double p)
 			transition = true;
 		}
 		break;
-	case HAVE_PEAK:
+	case HAVE_VALLEY:
 		if(last_point > p) {
 			set_transition(HAVE_PEAK, last_point);
 			transition = true;
 		}
 		break;
-	case HAVE_VALLEY:
+	case HAVE_PEAK:
 		if(last_point < p) {
 			set_transition(HAVE_VALLEY, last_point);
 			transition = true;
