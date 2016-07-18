@@ -23,7 +23,7 @@
 CXX := g++
 LD  := g++
 
-CFLAGS += -Wall -std=c++11 -fpic
+CFLAGS += -Wall -std=c++11 -fpic -fvisibility=hidden
 LDFLAGS += -shared -Wall
 
 PROJECT := lib-rflow.so

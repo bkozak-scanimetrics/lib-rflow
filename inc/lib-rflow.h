@@ -26,6 +26,14 @@ extern "C" {
 ******************************************************************************/
 #include <stdlib.h>
 /******************************************************************************
+*                                   DEFINES                                   *
+******************************************************************************/
+#if __GNUC__
+#define EXPORT __attribute__((visibility("default")))
+#else
+#error "compiler not supported"
+#endif
+/******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
 struct rf_init {
@@ -53,9 +61,13 @@ struct rf_state;
 /******************************************************************************
 *                             FUNCTION PROTOTYPES                             *
 ******************************************************************************/
+EXPORT
 struct rf_state* lib_rflow_init(const struct rf_init *init);
+EXPORT
 int lib_rflow_count(struct rf_state *state, const double *points, size_t num);
+EXPORT
 struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state);
+EXPORT
 void lib_rflow_destroy(struct rf_state *state);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
