@@ -22,6 +22,7 @@
 #include "lib-rflow.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 /******************************************************************************
 *                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
@@ -29,9 +30,10 @@ static void test_0(void)
 {
 	struct rf_state  *state;
 	struct rf_matrix *matrix;
+	char *string_matrix;
 	struct rf_init i = {
-		.amp_bin_count  = 128,
-		.mean_bin_count = 128,
+		.amp_bin_count  = 10,
+		.mean_bin_count = 10,
 		.mean_min       = 0.0,
 		.amp_min        = 0.0,
 		.mean_bin_size  = 1.0,
@@ -42,6 +44,12 @@ static void test_0(void)
 	matrix = lib_rflow_get_matrix(state);
 
 	lib_rflow_destroy(state);
+
+	lib_rflow_string_matrix(matrix, &string_matrix);
+
+	printf("%s", string_matrix);
+
+	free(string_matrix);
 	free(matrix);
 }
 /*****************************************************************************/

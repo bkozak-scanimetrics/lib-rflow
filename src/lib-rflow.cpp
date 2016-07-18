@@ -24,7 +24,12 @@
 #include "private/rflow.h"
 
 #include <new>
+#include <string>
+#include <sstream>
+
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
@@ -35,6 +40,19 @@ struct matrix_mem {
 /******************************************************************************
 *                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
+static size_t cstr_copy(const std::string &s, char **copy)
+{
+	size_t len = s.size() + 1;
+	*copy = (char*)malloc(len);
+
+	if(*copy == NULL) {
+		return 0;
+	}
+
+	memcpy(*copy, s.c_str(), len);
+	return len;
+}
+/*****************************************************************************/
 extern "C"
 struct rf_state* lib_rflow_init(const struct rf_init *init)
 {
@@ -84,5 +102,24 @@ extern "C"
 void lib_rflow_destroy(struct rf_state *state)
 {
 	delete state;
+}
+/*****************************************************************************/
+extern "C"
+size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out)
+{
+	std::ostringstream stream;
+
+	for(int i = 0; i < m->amp_bin_count; i++) {
+		for(int n = 0; n < m->mean_bin_count; n++) {
+			unsigned bin = m->bins[n + i * m->mean_bin_count];
+			if(n != (m->mean_bin_count - 1)) {
+				stream << bin << ", ";
+			} else {
+				stream << bin << std::endl;
+			}
+		}
+	}
+
+	return cstr_copy(stream.str(), cstr_out);
 }
 /*****************************************************************************/

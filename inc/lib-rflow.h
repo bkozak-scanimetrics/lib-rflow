@@ -69,6 +69,8 @@ EXPORT
 struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state);
 EXPORT
 void lib_rflow_destroy(struct rf_state *state);
+EXPORT
+size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
