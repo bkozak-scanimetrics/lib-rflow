@@ -22,7 +22,7 @@
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-enum cycle_direction{TO_NEGATIVE, TO_POSITIVE};
+enum cycle_direction{CYCLE_COMPRESSIVE, CYCLE_TENSILE};
 
 class rf_cycle {
 private:
@@ -30,20 +30,23 @@ private:
 	const enum cycle_direction direction;
 
 	bool    terminated;
+	bool    flowing;
 	double  cycle_end;
-	int     half_cycles;
+	int     merge_count;
 public:
 	rf_cycle(double cycle_start, enum cycle_direction dir);
 
 	void terminate(void);
 	void merge(rf_cycle *other);
-	bool extend(double p);
+	void set_flow_point(double p);
+	bool process_opposite_point(double p);
 
 	bool needs_merge(const rf_cycle &that) const;
 	double magnitude(void) const;
 	double mean(void) const;
 
 	bool is_terminated(void) const;
+	bool is_flowing(void) const;
 	double get_cycle_start(void) const;
 	double get_cycle_end(void) const;
 	int get_half_cycles(void) const;

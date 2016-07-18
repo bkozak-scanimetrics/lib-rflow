@@ -22,19 +22,25 @@
 ###############################################################################
 CXX := g++
 LD  := g++
+CC  := gcc
 
-CFLAGS += -Wall -std=c++11 -fpic
+CFLAGS += -Wall -std=c++11 -fpic -fvisibility=hidden
 LDFLAGS += -shared -Wall
 
 PROJECT := lib-rflow.so
 
 NO_DEPS_TARGETS += clean directories dir_clean
+
+SOURCE_TREE := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+TEST_CFLAGS += -Wall -std=c99
 ###############################################################################
 #                                 BUILD DIRS                                  #
 ###############################################################################
 BUILD_DIR   := obj
 EXE_DIR     := bin
 ASM_GEN_DIR := asm_gen
+TEST_DIR    := test
 
 SRC_TREE += src
 
@@ -50,13 +56,18 @@ OBJ_FILES += $(foreach f,$(C_FILES),$(BUILD_DIR)/$(patsubst %.cpp,%.o,$(f)))
 DEP_FILES += $(foreach f,$(C_FILES),$(BUILD_DIR)/$(patsubst %.cpp,%.d,$(f)))
 ASM_GEN   += $(foreach f,$(C_FILES),$(ASM_GEN_DIR)/$(patsubst %.cpp,%.s,$(f)))
 
+TEST_SOURCE := $(TEST_DIR)/test.c
+
 LIBS = -lrt -lm
 
 BINARY := $(EXE_DIR)/$(PROJECT)
+DEBUG_TEST := $(EXE_DIR)/debug-test
+RELEASE_TEST := $(EXE_DIR)/release-test
 
 INCLUDES += $(foreach f,$(INC_DIRS),-I$(f))
 
 CFLAGS += $(INCLUDES)
+TEST_CFLAGS += -Iinc
 
 vpath %.cpp $(SRC_DIRS)
 
@@ -84,6 +95,14 @@ asg_gen: CFLAGS += -fverbose-asm
 asm_gen: CFLAGS += -DNDEBUG=1 -march=native -Os -flto
 asm_gen: $(ASM_GEN)
 
+debug_test: $(DEBUG_TEST)
+release_test: $(RELEASE_TEST)
+
+run_debug_test: debug_test
+	$(DEBUG_TEST)
+run_release_test: release_test
+	$(RELEASE_TEST)
+
 directories: $(BUILD_DIR)/.dir_dummy $(EXE_DIR)/.dir_dummy
 
 %.dir_dummy:
@@ -101,6 +120,16 @@ $(ASM_GEN): $(ASM_GEN_DIR)/%.s : %.c | $(ASM_GEN_DIR)/.dir_dummy
 
 $(BINARY): $(OBJ_FILES) | $(EXE_DIR)/.dir_dummy
 	$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
+
+$(DEBUG_TEST): CFLAGS += -DDEBUG=1 -g
+$(DEBUG_TEST): LDFLAGS += -g
+$(DEBUG_TEST): $(TEST_SOURCE) $(BINARY)
+	$(CC) $(TEST_CFLAGS) $(TEST_SOURCE) -l:$(BINARY) -o $(DEBUG_TEST)
+
+$(RELEASE_TEST): CFLAGS += -DNDEBUG=1 -march=native -g -Os -flto
+$(RELEASE_TEST): LDFLAGS += -march=native -g -Os -flto
+$(RELEASE_TEST): $(TEST_SOURCE) $(BINARY)
+	$(CC) $(TEST_CFLAGS) $(TEST_SOURCE) -l:$(BINARY) -o $(RELEASE_TEST)
 
 clean:
 	rm -f $(CLEAN_FILES)
