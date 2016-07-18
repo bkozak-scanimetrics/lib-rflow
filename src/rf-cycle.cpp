@@ -53,7 +53,7 @@ bool rf_cycle::extend(double p)
 {
 	assert(!terminated);
 
-	if(direction == TO_NEGATIVE) {
+	if(direction == CYCLE_COMPRESSIVE) {
 		if(p < cycle_end) {
 			cycle_end = p;
 		} else if(cycle_start < p) {
@@ -74,7 +74,7 @@ bool rf_cycle::needs_merge(const rf_cycle &that) const
 {
 	assert(!this->terminated);
 
-	if(direction == TO_NEGATIVE) {
+	if(direction == CYCLE_COMPRESSIVE) {
 		return (
 			this->cycle_start > that.cycle_start &&
 			this->cycle_end <= that.cycle_end

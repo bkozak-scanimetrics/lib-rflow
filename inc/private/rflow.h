@@ -23,13 +23,31 @@
 ******************************************************************************/
 #include "lib-rflow.h"
 
+#include "private/rf-cycle.h"
+
 #include <stdlib.h>
+
+#include <list>
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
 struct rf_state {
 private:
 	struct rf_matrix *const matrix;
+
+	std::list<rf_cycle>compressive_cycles;
+	std::list<rf_cycle>tensile_cycles;
+
+	double last_point;
+	enum {INIT_0, INIT_1, HAVE_PEAK, HAVE_VALLEY} cycle_state;
+
+	void process_point(double p);
+	void look_for_pv(double p);
+	void add_compressive(double p);
+	void add_tensile(double p);
+	void continue_cycles(double p);
+	void do_merges(void);
+	void count_finished_cycle(const rf_cycle &c);
 public:
 	rf_state(struct rf_matrix *matrix);
 	void count(const double *points, size_t num);

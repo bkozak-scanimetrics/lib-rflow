@@ -22,7 +22,7 @@
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-enum cycle_direction{TO_NEGATIVE, TO_POSITIVE};
+enum cycle_direction{CYCLE_COMPRESSIVE, CYCLE_TENSILE};
 
 class rf_cycle {
 private:
