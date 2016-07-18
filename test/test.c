@@ -24,6 +24,26 @@
 #include <stdlib.h>
 #include <stdio.h>
 /******************************************************************************
+*                                   DEFINES                                   *
+******************************************************************************/
+#define ARR_SIZE(a) (sizeof(a)/sizeof(a[0]))
+/******************************************************************************
+*                                    DATA                                     *
+******************************************************************************/
+static const double test_data_0[] = {
+	-2.0, 1.0,
+	-3.0, 5.0,
+	-1.0, 3.0,
+	-4.0, 4.0,
+	-2.0
+};
+/* http://citeseerx.ist.psu.edu/viewdoc/download
+   ?doi=10.1.1.444.3640&rep=rep1&type=pdf */
+/*****************************************************************************/
+static const double test_data_1[] = {
+	1.1, -4.6, -0.2, -3.5, -0.8, -2.7, 6.0
+}; /* http://nal-ir.nal.res.in/9082/1/K.L_._SIngh_and_V.R.Ramganath.pdf */
+/******************************************************************************
 *                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
 static void test_0(void)
@@ -32,16 +52,18 @@ static void test_0(void)
 	struct rf_matrix *matrix;
 	char *string_matrix;
 	struct rf_init i = {
-		.amp_bin_count  = 10,
-		.mean_bin_count = 10,
-		.mean_min       = 0.0,
+		.amp_bin_count  = 12,
+		.mean_bin_count = 1,
+		.mean_min       = -6.0,
 		.amp_min        = 0.0,
 		.mean_bin_size  = 1.0,
-		.amp_bin_size   = 1.0
+		.amp_bin_size   = 12.0
 	};
 
 	state = lib_rflow_init(&i);
 	matrix = lib_rflow_get_matrix(state);
+
+	lib_rflow_count(state, test_data_0, ARR_SIZE(test_data_0));
 
 	lib_rflow_destroy(state);
 
