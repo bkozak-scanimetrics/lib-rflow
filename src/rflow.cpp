@@ -132,6 +132,8 @@ void rf_state::flow_newest(void)
 		unflowing = &tensile_cycles.front();
 	} else if (compressive_cycles.size()){
 		unflowing = &compressive_cycles.front();
+	} else {
+		return;
 	}
 
 	assert(!unflowing->is_flowing());
