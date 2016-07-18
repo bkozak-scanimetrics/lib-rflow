@@ -53,6 +53,24 @@ static size_t cstr_copy(const std::string &s, char **copy)
 	return len;
 }
 /*****************************************************************************/
+static size_t string_matrix(const struct rf_matrix *m, char **cstr_out)
+{
+	std::ostringstream stream;
+
+	for(int i = 0; i < m->amp_bin_count; i++) {
+		for(int n = 0; n < m->mean_bin_count; n++) {
+			unsigned bin = m->bins[n + i * m->mean_bin_count];
+			if(n != (m->mean_bin_count - 1)) {
+				stream << bin << ", ";
+			} else {
+				stream << bin << std::endl;
+			}
+		}
+	}
+
+	return cstr_copy(stream.str(), cstr_out);
+}
+/*****************************************************************************/
 extern "C"
 struct rf_state* lib_rflow_init(const struct rf_init *init)
 {
@@ -78,6 +96,8 @@ struct rf_state* lib_rflow_init(const struct rf_init *init)
 		return new rf_state(&m->matrix);
 	} catch(std::bad_alloc& exc) {
 		goto fail;
+	} catch(...) {
+		goto fail;
 	}
 
 fail:
@@ -88,14 +108,22 @@ fail:
 extern "C"
 int lib_rflow_count(struct rf_state *state, const double *points, size_t num)
 {
-	state->count(points, num);
-	return 0;
+	try {
+		state->count(points, num);
+		return 0;
+	} catch(...) {
+		return 1;
+	}
 }
 /*****************************************************************************/
 extern "C"
 struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state)
 {
-	return state->get_matrix();
+	try {
+		return state->get_matrix();
+	} catch(...) {
+		return NULL;
+	}
 }
 /*****************************************************************************/
 extern "C"
@@ -107,19 +135,12 @@ void lib_rflow_destroy(struct rf_state *state)
 extern "C"
 size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out)
 {
-	std::ostringstream stream;
-
-	for(int i = 0; i < m->amp_bin_count; i++) {
-		for(int n = 0; n < m->mean_bin_count; n++) {
-			unsigned bin = m->bins[n + i * m->mean_bin_count];
-			if(n != (m->mean_bin_count - 1)) {
-				stream << bin << ", ";
-			} else {
-				stream << bin << std::endl;
-			}
-		}
-	}
-
-	return cstr_copy(stream.str(), cstr_out);
+	*cstr_out = NULL;
+	try {
+		return string_matrix(m, cstr_out);
+	} catch(...) {
+		free(cstr_out);
+		return 0;
+	};
 }
 /*****************************************************************************/
