@@ -25,6 +25,7 @@
 #include "private/rf-cycle.h"
 
 #include <assert.h>
+#include <stdio.h>
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
@@ -119,7 +120,7 @@ void rf_state::add_new_cycle(void)
 	}
 }
 /*****************************************************************************/
-void rf_state::set_flow_point(void)
+void rf_state::flow_newest(void)
 {
 	rf_cycle *unflowing;
 
@@ -127,9 +128,9 @@ void rf_state::set_flow_point(void)
 	   We have to set one here before we can start to look for cycle
 	   terminations, process merges etc. */
 	/* Note also that new cycles are added at the front of the list */
-	if(cycle_state == HAVE_PEAK) {
+	if(cycle_state == HAVE_PEAK && tensile_cycles.size()) {
 		unflowing = &tensile_cycles.front();
-	} else {
+	} else if (compressive_cycles.size()){
 		unflowing = &compressive_cycles.front();
 	}
 
@@ -192,7 +193,7 @@ void rf_state::process_point(double p)
 	if(peak_valley_transition(p)) {
 		assert(cycle_state == HAVE_VALLEY || cycle_state == HAVE_PEAK);
 		add_new_cycle();
-		set_flow_point();
+		flow_newest();
 		process_opposite_points();
 		do_merges();
 	}
@@ -237,7 +238,7 @@ void rf_state::terminate(void)
 		break;
 	}
 
-	set_flow_point();
+	flow_newest();
 	process_opposite_points();
 	do_merges();
 

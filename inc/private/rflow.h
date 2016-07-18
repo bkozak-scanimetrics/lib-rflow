@@ -48,7 +48,7 @@ private:
 	void process_point(double p);
 	void add_compressive(double p);
 	void add_tensile(double p);
-	void set_flow_point(void);
+	void flow_newest(void);
 	void process_opposite_points(void);
 	void do_merges(void);
 	void count_finished_cycle(const rf_cycle &c);
