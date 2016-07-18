@@ -33,7 +33,7 @@ NO_DEPS_TARGETS += clean directories dir_clean
 
 SOURCE_TREE := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-TEST_CFLAGS += -Wall -std=c99
+TEST_CFLAGS += -Wall -std=c99 -g
 ###############################################################################
 #                                 BUILD DIRS                                  #
 ###############################################################################
