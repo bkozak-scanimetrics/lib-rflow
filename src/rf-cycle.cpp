@@ -24,6 +24,7 @@
 #include <assert.h>
 
 #include <cmath>
+#include <utility>
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
@@ -31,8 +32,9 @@ rf_cycle::rf_cycle(double cycle_start, enum cycle_direction dir)
 : cycle_start{cycle_start}, direction{dir}
 {
 	terminated  = false;
+	flowing     = false;
 	cycle_end   = cycle_start;
-	half_cycles = 1;
+	merge_count = 1;
 }
 /*****************************************************************************/
 void rf_cycle::terminate(void)
@@ -43,26 +45,39 @@ void rf_cycle::terminate(void)
 void rf_cycle::merge(rf_cycle *that)
 {
 	assert(!this->terminated);
+	assert(flowing);
 	assert(this->needs_merge(*that));
 
-	that->terminate();
-	this->half_cycles += that->half_cycles;
+	this->terminate();
+	std::swap(this->cycle_end, that->cycle_end);
+	that->merge_count += this->merge_count;
 }
 /*****************************************************************************/
-bool rf_cycle::extend(double p)
+void rf_cycle::set_flow_point(double p)
+{
+	assert(!flowing);
+
+	flowing   = true;
+	cycle_end = p;
+
+	if(direction == CYCLE_COMPRESSIVE) {
+		assert(cycle_end < cycle_start);
+	} else if (direction == CYCLE_TENSILE) {
+		assert(cycle_start > cycle_start);
+	}
+}
+/*****************************************************************************/
+bool rf_cycle::process_opposite_point(double p)
 {
 	assert(!terminated);
+	assert(flowing);
 
-	if(direction == TO_NEGATIVE) {
-		if(p < cycle_end) {
-			cycle_end = p;
-		} else if(cycle_start < p) {
+	if(direction == CYCLE_COMPRESSIVE) {
+		if(cycle_start < p) {
 			terminate();
 		}
 	} else {
-		if(p > cycle_end) {
-			cycle_end = p;
-		} else if(cycle_start > p) {
+		if(cycle_start > p) {
 			terminate();
 		}
 	}
@@ -73,17 +88,13 @@ bool rf_cycle::extend(double p)
 bool rf_cycle::needs_merge(const rf_cycle &that) const
 {
 	assert(!this->terminated);
+	assert(flowing);
+	assert(this->direction == that.direction);
 
-	if(direction == TO_NEGATIVE) {
-		return (
-			this->cycle_start > that.cycle_start &&
-			this->cycle_end <= that.cycle_end
-		);
+	if(direction == CYCLE_COMPRESSIVE) {
+		return(this->cycle_end <= that.cycle_end);
 	} else {
-		return (
-			this->cycle_start < that.cycle_start &&
-			this->cycle_end >= that.cycle_end
-		);
+		return(this->cycle_end >= that.cycle_end);
 	}
 }
 /*****************************************************************************/
@@ -99,12 +110,17 @@ double rf_cycle::mean(void) const
 /*****************************************************************************/
 int rf_cycle::get_half_cycles(void) const
 {
-	return half_cycles;
+	return merge_count;
 }
 /*****************************************************************************/
 bool rf_cycle::is_terminated(void) const
 {
 	return terminated;
+}
+/*****************************************************************************/
+bool rf_cycle::is_flowing(void) const
+{
+	return flowing;
 }
 /*****************************************************************************/
 double rf_cycle::get_cycle_start(void) const

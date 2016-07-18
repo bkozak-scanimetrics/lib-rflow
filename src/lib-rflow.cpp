@@ -51,6 +51,8 @@ struct rf_state* lib_rflow_init(const struct rf_init *init)
 	m->matrix.mean_bin_count = init->mean_bin_count;
 	m->matrix.mean_min       = init->mean_min;
 	m->matrix.amp_min        = init->amp_min;
+	m->matrix.mean_bin_size  = init->mean_bin_size;
+	m->matrix.amp_bin_size   = init->amp_bin_size;
 
 	m->matrix.bins            = m->bins;
 
