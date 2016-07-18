@@ -52,8 +52,11 @@ private:
 	void process_opposite_points(void);
 	void do_merges(void);
 	void count_finished_cycle(const rf_cycle &c);
+	void clear_cycles(std::list<rf_cycle> *list);
 public:
 	rf_state(struct rf_matrix *matrix);
+	~rf_state(void);
+	void terminate(void);
 	void count(const double *points, size_t num);
 	struct rf_matrix* get_matrix(void);
 };

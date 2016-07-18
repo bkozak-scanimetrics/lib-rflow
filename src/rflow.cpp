@@ -45,6 +45,16 @@ find_merge_point(const std::list<rf_cycle>::iterator &start,
 /******************************************************************************
 *                               PRIVATE METHODS                               *
 ******************************************************************************/
+void rf_state::clear_cycles(std::list<rf_cycle> *list)
+{
+	while(list->size()) {
+		rf_cycle &c = list->front();
+		c.terminate();
+		count_finished_cycle(c);
+		list->pop_front();
+	}
+}
+/*****************************************************************************/
 void rf_state::add_compressive(double p)
 {
 	compressive_cycles.emplace_front(p, CYCLE_COMPRESSIVE);
@@ -202,6 +212,38 @@ void rf_state::count_finished_cycle(const rf_cycle &c)
 rf_state::rf_state(struct rf_matrix *matrix)
 : matrix{matrix}, compressive_cycles{}, tensile_cycles{}
 {
+	cycle_state = INIT_0;
+}
+/*****************************************************************************/
+rf_state::~rf_state(void)
+{
+	terminate();
+}
+/*****************************************************************************/
+void rf_state::terminate(void)
+{
+	switch(cycle_state)
+	{
+	case INIT_0:
+		return;
+	case INIT_1:
+		cycle_state = INIT_0;
+		return;
+	case HAVE_PEAK:
+		set_transition(HAVE_VALLEY, last_point);
+		break;
+	case HAVE_VALLEY:
+		set_transition(HAVE_PEAK, last_point);
+		break;
+	}
+
+	set_flow_point();
+	process_opposite_points();
+	do_merges();
+
+	clear_cycles(&compressive_cycles);
+	clear_cycles(&tensile_cycles);
+
 	cycle_state = INIT_0;
 }
 /*****************************************************************************/
