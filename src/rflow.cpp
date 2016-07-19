@@ -195,9 +195,9 @@ void rf_state::process_point(double p)
 	if(peak_valley_transition(p)) {
 		assert(cycle_state == HAVE_VALLEY || cycle_state == HAVE_PEAK);
 		process_opposite_points();
-		do_merges();
 		add_new_cycle();
 		flow_newest();
+		do_merges();
 	}
 }
 /*****************************************************************************/
