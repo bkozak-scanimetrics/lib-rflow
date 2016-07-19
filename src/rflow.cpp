@@ -130,7 +130,7 @@ void rf_state::flow_newest(void)
 	/* Note also that new cycles are added at the front of the list */
 	if(cycle_state == HAVE_PEAK && tensile_cycles.size()) {
 		unflowing = &tensile_cycles.front();
-	} else if (compressive_cycles.size()){
+	} else if (cycle_state == HAVE_VALLEY && compressive_cycles.size()){
 		unflowing = &compressive_cycles.front();
 	} else {
 		return;
@@ -194,10 +194,10 @@ void rf_state::process_point(double p)
 {
 	if(peak_valley_transition(p)) {
 		assert(cycle_state == HAVE_VALLEY || cycle_state == HAVE_PEAK);
-		add_new_cycle();
-		flow_newest();
 		process_opposite_points();
 		do_merges();
+		add_new_cycle();
+		flow_newest();
 	}
 }
 /*****************************************************************************/
