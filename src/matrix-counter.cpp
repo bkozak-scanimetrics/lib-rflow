@@ -19,71 +19,33 @@
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
+#include "private/matrix-counter.h"
+
 #include "lib-rflow.h"
-
-#include <stdlib.h>
-#include <stdio.h>
 /******************************************************************************
-*                                   DEFINES                                   *
+*                               PUBLIC METHODS                                *
 ******************************************************************************/
-#define ARR_SIZE(a) (sizeof(a)/sizeof(a[0]))
-/******************************************************************************
-*                                    DATA                                     *
-******************************************************************************/
-static const double test_data_0[] = {
-	-2.0, 1.0,
-	-3.0, 5.0,
-	-1.0, 3.0,
-	-4.0, 4.0,
-	-2.0
-};
-/* http://citeseerx.ist.psu.edu/viewdoc/download
-   ?doi=10.1.1.444.3640&rep=rep1&type=pdf */
-/*****************************************************************************/
-static const double test_data_1[] = {
-	1.1, -4.6, -0.2, -3.5, -0.8, -2.7, 6.0
-}; /* http://nal-ir.nal.res.in/9082/1/K.L_._SIngh_and_V.R.Ramganath.pdf */
-/*****************************************************************************/
-static const double test_simple_merge[] = {
-	1.0, -2.0,
-	0.0, -3.0,
-	2.0
-};
-/******************************************************************************
-*                            FUNCTION DEFINITIONS                             *
-******************************************************************************/
-static void test_0(void)
+void matrix_counter::end_history(void)
 {
-	struct lib_rflow_state  *state;
-	struct rf_matrix *matrix;
-	char *string_matrix;
-	struct rf_init i = {
-		.amp_bin_count  = 12,
-		.mean_bin_count = 1,
-		.mean_min       = -6.0,
-		.amp_min        = 0.0,
-		.mean_bin_size  = 12.0,
-		.amp_bin_size   = 1.0
-	};
-
-	state = lib_rflow_init(&i);
-	matrix = lib_rflow_get_matrix(state);
-
-	lib_rflow_count(state, test_data_0, ARR_SIZE(test_data_0));
-
-	lib_rflow_destroy(state);
-
-	lib_rflow_string_matrix(matrix, &string_matrix);
-
-	printf("%s", string_matrix);
-
-	free(string_matrix);
-	free(matrix);
 }
 /*****************************************************************************/
-int main(int argc, char **argv)
+const struct rf_matrix * matrix_counter::get_matrix(void) const
 {
-	test_0();
-	return 0;
+	return matrix;
+}
+/*****************************************************************************/
+void matrix_counter::proc_cycle(const rf_cycle &c)
+{
+	unsigned *bin_ptr = lib_rflow_bin_ptr(matrix, c.magnitude(), c.mean());
+
+	if(bin_ptr != NULL) {
+		*bin_ptr += 1;
+	}
+}
+/*****************************************************************************/
+matrix_counter::matrix_counter(struct rf_matrix *m)
+: matrix{m}
+{
+
 }
 /*****************************************************************************/

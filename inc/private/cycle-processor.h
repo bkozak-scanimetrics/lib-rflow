@@ -16,49 +16,22 @@
 * You should have received a copy of the GNU General Public License           *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
-#ifndef RFLOW_H_
-#define RFLOW_H_
+#ifndef CYCLE_PROCESSOR_H_
+#define CYCLE_PROCESSOR_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "lib-rflow.h"
-
 #include "private/rf-cycle.h"
-#include "private/cycle-processor.h"
-
-#include <stdlib.h>
-
-#include <list>
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-struct rf_state {
-private:
-	cycle_processor *const cycle_proc;
-
-	std::list<rf_cycle>compressive_cycles;
-	std::list<rf_cycle>tensile_cycles;
-
-	double last_point;
-	double current_pv;
-	enum cycle_state {INIT_0, INIT_1, HAVE_PEAK, HAVE_VALLEY} cycle_state;
-
-	void add_new_cycle(void);
-	void set_transition(enum cycle_state new_state, double pv);
-	bool peak_valley_transition(double p);
-	void process_point(double p);
-	void add_compressive(double p);
-	void add_tensile(double p);
-	void flow_newest(void);
-	void process_opposite_points(void);
-	void do_merges(void);
-	void count_finished_cycle(const rf_cycle &c);
-	void clear_cycles(std::list<rf_cycle> *list);
+class cycle_processor {
+protected:
+	cycle_processor(void);
 public:
-	rf_state(cycle_processor *cycle_proc);
-	~rf_state(void);
-	void terminate(void);
-	void count(const double *points, size_t num);
+	virtual ~cycle_processor(void);
+	virtual void proc_cycle(const rf_cycle &c) = 0;
+	virtual void end_history(void) = 0;
 };
 /*****************************************************************************/
-#endif /* RFLOW_H_ */
+#endif /* CYCLE_PROCESSOR_H_ */

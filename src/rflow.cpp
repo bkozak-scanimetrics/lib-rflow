@@ -130,7 +130,7 @@ void rf_state::flow_newest(void)
 	/* Note also that new cycles are added at the front of the list */
 	if(cycle_state == HAVE_PEAK && tensile_cycles.size()) {
 		unflowing = &tensile_cycles.front();
-	} else if (compressive_cycles.size()){
+	} else if (cycle_state == HAVE_VALLEY && compressive_cycles.size()){
 		unflowing = &compressive_cycles.front();
 	} else {
 		return;
@@ -166,7 +166,7 @@ void rf_state::process_opposite_points(void)
 void rf_state::do_merges(void)
 {
 	std::list<rf_cycle> *l = nullptr;
-	if(cycle_state == HAVE_PEAK) {
+	if(cycle_state == HAVE_VALLEY) {
 		l = &compressive_cycles;
 	} else {
 		l = &tensile_cycles;
@@ -194,26 +194,22 @@ void rf_state::process_point(double p)
 {
 	if(peak_valley_transition(p)) {
 		assert(cycle_state == HAVE_VALLEY || cycle_state == HAVE_PEAK);
+		process_opposite_points();
 		add_new_cycle();
 		flow_newest();
-		process_opposite_points();
 		do_merges();
 	}
 }
 /*****************************************************************************/
 void rf_state::count_finished_cycle(const rf_cycle &c)
 {
-	unsigned *bin_ptr = lib_rflow_bin_ptr(matrix, c.magnitude(), c.mean());
-
-	if(bin_ptr != NULL) {
-		*bin_ptr += 1;
-	}
+	cycle_proc->proc_cycle(c);
 }
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
-rf_state::rf_state(struct rf_matrix *matrix)
-: matrix{matrix}, compressive_cycles{}, tensile_cycles{}
+rf_state::rf_state(cycle_processor *cycle_proc)
+: cycle_proc{cycle_proc}, compressive_cycles{}, tensile_cycles{}
 {
 	cycle_state = INIT_0;
 }
@@ -255,10 +251,5 @@ void rf_state::count(const double *points, size_t num)
 	for(size_t i = 0; i < num; i++) {
 		process_point(points[i]);
 	}
-}
-/*****************************************************************************/
-struct rf_matrix* rf_state::get_matrix(void)
-{
-	return matrix;
 }
 /*****************************************************************************/

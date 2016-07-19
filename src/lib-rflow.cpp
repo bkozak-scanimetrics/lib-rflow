@@ -22,10 +22,13 @@
 #include "lib-rflow.h"
 
 #include "private/rflow.h"
+#include "private/cycle-processor.h"
+#include "private/matrix-counter.h"
 
 #include <new>
 #include <string>
 #include <sstream>
+#include <memory>
 
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +40,43 @@ struct matrix_mem {
 	struct rf_matrix matrix;
 	unsigned bins[];
 };
+/*****************************************************************************/
+struct lib_rflow_state {
+public:
+	std::unique_ptr<cycle_processor> proc;
+	std::unique_ptr<rf_state>        rstate;
+	struct rf_matrix                *matrix;
+
+	lib_rflow_state(const struct rf_init *init);
+};
+/******************************************************************************
+*                               PUBLIC METHODS                                *
+******************************************************************************/
+lib_rflow_state::lib_rflow_state(const struct rf_init *init)
+{
+	struct matrix_mem *m  = NULL;
+
+	size_t cells = init->amp_bin_count * init->mean_bin_count;
+
+	m = (struct matrix_mem*)malloc(
+		sizeof(struct rf_matrix) + cells * sizeof(m->bins[0])
+	);
+	if(m == NULL) {
+		throw std::bad_alloc{};
+	}
+	proc.reset(new matrix_counter(&m->matrix));
+	rstate.reset(new rf_state(&*proc));
+
+	m->matrix.amp_bin_count  = init->amp_bin_count;
+	m->matrix.mean_bin_count = init->mean_bin_count;
+	m->matrix.mean_min       = init->mean_min;
+	m->matrix.amp_min        = init->amp_min;
+	m->matrix.mean_bin_size  = init->mean_bin_size;
+	m->matrix.amp_bin_size   = init->amp_bin_size;
+
+	m->matrix.bins            = m->bins;
+	matrix = &m->matrix;
+}
 /******************************************************************************
 *                            FUNCTION DEFINITIONS                             *
 ******************************************************************************/
@@ -72,44 +112,25 @@ static size_t string_matrix(const struct rf_matrix *m, char **cstr_out)
 }
 /*****************************************************************************/
 extern "C"
-struct rf_state* lib_rflow_init(const struct rf_init *init)
+struct lib_rflow_state* lib_rflow_init(const struct rf_init *init)
 {
-	size_t cells = init->amp_bin_count * init->mean_bin_count;
-
-	struct matrix_mem *m = (struct matrix_mem*)malloc(
-		sizeof(struct rf_matrix) + cells * sizeof(m->bins[0])
-	);
-	if(m == NULL) {
-		goto fail;
-	}
-
-	m->matrix.amp_bin_count  = init->amp_bin_count;
-	m->matrix.mean_bin_count = init->mean_bin_count;
-	m->matrix.mean_min       = init->mean_min;
-	m->matrix.amp_min        = init->amp_min;
-	m->matrix.mean_bin_size  = init->mean_bin_size;
-	m->matrix.amp_bin_size   = init->amp_bin_size;
-
-	m->matrix.bins            = m->bins;
-
 	try {
-		return new rf_state(&m->matrix);
-	} catch(std::bad_alloc& exc) {
+		return new lib_rflow_state(init);
+	}  catch(std::bad_alloc& exc) {
 		goto fail;
 	} catch(...) {
 		goto fail;
 	}
 
 fail:
-	free(m);
 	return NULL;
 }
 /*****************************************************************************/
 extern "C"
-int lib_rflow_count(struct rf_state *state, const double *points, size_t num)
+int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num)
 {
 	try {
-		state->count(points, num);
+		s->rstate->count(arr, num);
 		return 0;
 	} catch(...) {
 		return 1;
@@ -117,19 +138,19 @@ int lib_rflow_count(struct rf_state *state, const double *points, size_t num)
 }
 /*****************************************************************************/
 extern "C"
-struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state)
+struct rf_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s)
 {
 	try {
-		return state->get_matrix();
+		return s->matrix;
 	} catch(...) {
 		return NULL;
 	}
 }
 /*****************************************************************************/
 extern "C"
-void lib_rflow_destroy(struct rf_state *state)
+void lib_rflow_destroy(struct lib_rflow_state *s)
 {
-	delete state;
+	delete s;
 }
 /*****************************************************************************/
 extern "C"

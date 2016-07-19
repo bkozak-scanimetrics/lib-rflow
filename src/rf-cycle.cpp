@@ -63,7 +63,7 @@ void rf_cycle::set_flow_point(double p)
 	if(direction == CYCLE_COMPRESSIVE) {
 		assert(cycle_end < cycle_start);
 	} else if (direction == CYCLE_TENSILE) {
-		assert(cycle_start > cycle_start);
+		assert(cycle_end > cycle_start);
 	}
 }
 /*****************************************************************************/
