@@ -56,8 +56,8 @@ static void test_0(void)
 		.mean_bin_count = 1,
 		.mean_min       = -6.0,
 		.amp_min        = 0.0,
-		.mean_bin_size  = 1.0,
-		.amp_bin_size   = 12.0
+		.mean_bin_size  = 12.0,
+		.amp_bin_size   = 1.0
 	};
 
 	state = lib_rflow_init(&i);
