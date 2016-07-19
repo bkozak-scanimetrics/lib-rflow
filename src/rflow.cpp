@@ -166,7 +166,7 @@ void rf_state::process_opposite_points(void)
 void rf_state::do_merges(void)
 {
 	std::list<rf_cycle> *l = nullptr;
-	if(cycle_state == HAVE_PEAK) {
+	if(cycle_state == HAVE_VALLEY) {
 		l = &compressive_cycles;
 	} else {
 		l = &tensile_cycles;
