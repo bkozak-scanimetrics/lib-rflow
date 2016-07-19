@@ -203,17 +203,13 @@ void rf_state::process_point(double p)
 /*****************************************************************************/
 void rf_state::count_finished_cycle(const rf_cycle &c)
 {
-	unsigned *bin_ptr = lib_rflow_bin_ptr(matrix, c.magnitude(), c.mean());
-
-	if(bin_ptr != NULL) {
-		*bin_ptr += 1;
-	}
+	cycle_proc->proc_cycle(c);
 }
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
-rf_state::rf_state(struct rf_matrix *matrix)
-: matrix{matrix}, compressive_cycles{}, tensile_cycles{}
+rf_state::rf_state(cycle_processor *cycle_proc)
+: cycle_proc{cycle_proc}, compressive_cycles{}, tensile_cycles{}
 {
 	cycle_state = INIT_0;
 }
@@ -255,10 +251,5 @@ void rf_state::count(const double *points, size_t num)
 	for(size_t i = 0; i < num; i++) {
 		process_point(points[i]);
 	}
-}
-/*****************************************************************************/
-struct rf_matrix* rf_state::get_matrix(void)
-{
-	return matrix;
 }
 /*****************************************************************************/

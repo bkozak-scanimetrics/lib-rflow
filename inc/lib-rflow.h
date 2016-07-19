@@ -57,18 +57,18 @@ struct rf_matrix {
 	unsigned *bins;
 };
 /*****************************************************************************/
-struct rf_state;
+struct lib_rflow_state;
 /******************************************************************************
 *                             FUNCTION PROTOTYPES                             *
 ******************************************************************************/
 EXPORT
-struct rf_state* lib_rflow_init(const struct rf_init *init);
+struct lib_rflow_state* lib_rflow_init(const struct rf_init *init);
 EXPORT
-int lib_rflow_count(struct rf_state *state, const double *points, size_t num);
+int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num);
 EXPORT
-struct rf_matrix* lib_rflow_get_matrix(struct rf_state *state);
+struct rf_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s);
 EXPORT
-void lib_rflow_destroy(struct rf_state *state);
+void lib_rflow_destroy(struct lib_rflow_state *s);
 EXPORT
 size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out);
 /******************************************************************************
