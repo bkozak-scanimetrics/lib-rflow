@@ -96,14 +96,14 @@ static inline unsigned* lib_rflow_bin_ptr(const struct rf_matrix *m,
 	size_t amp_bin;
 	size_t mean_bin;
 
-	if(mean > mean_max || mean < m->mean_min) {
+	if(mean >= mean_max || mean < m->mean_min) {
 		return NULL;
-	} else if(amp > amp_max || amp < m->amp_min) {
+	} else if(amp >= amp_max || amp < m->amp_min) {
 		return NULL;
 	}
 
-	mean_bin = (size_t)((mean - m->mean_min) / m->mean_bin_count);
-	amp_bin  = (size_t)((amp  - m->amp_min)  / m->amp_bin_count);
+	mean_bin = (size_t)((mean - m->mean_min) / m->mean_bin_size);
+	amp_bin  = (size_t)((amp  - m->amp_min)  / m->amp_bin_size);
 
 	return &m->bins[mean_bin + m->mean_bin_count * amp_bin];
 }
