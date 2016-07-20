@@ -47,12 +47,12 @@ public:
 	std::unique_ptr<rf_state>        rstate;
 	struct rf_matrix                *matrix;
 
-	lib_rflow_state(const struct rf_init *init);
+	lib_rflow_state(const struct lib_rflow_init *init);
 };
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
-lib_rflow_state::lib_rflow_state(const struct rf_init *init)
+lib_rflow_state::lib_rflow_state(const struct lib_rflow_init *init)
 {
 	struct matrix_mem *m  = NULL;
 
@@ -112,7 +112,7 @@ static size_t string_matrix(const struct rf_matrix *m, char **cstr_out)
 }
 /*****************************************************************************/
 extern "C"
-struct lib_rflow_state* lib_rflow_init(const struct rf_init *init)
+struct lib_rflow_state* lib_rflow_init(const struct lib_rflow_init *init)
 {
 	try {
 		return new lib_rflow_state(init);

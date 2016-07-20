@@ -36,7 +36,7 @@ extern "C" {
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-struct rf_init {
+struct lib_rflow_init {
 	int amp_bin_count;
 	int mean_bin_count;
 
@@ -67,7 +67,7 @@ struct lib_rflow_state;
 *                             FUNCTION PROTOTYPES                             *
 ******************************************************************************/
 EXPORT
-struct lib_rflow_state* lib_rflow_init(const struct rf_init *init);
+struct lib_rflow_state* lib_rflow_init(const struct lib_rflow_init *init);
 EXPORT
 int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num);
 EXPORT

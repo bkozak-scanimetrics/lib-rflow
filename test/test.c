@@ -57,7 +57,7 @@ static void test_0(void)
 	struct lib_rflow_state  *state;
 	struct rf_matrix *matrix;
 	char *string_matrix;
-	struct rf_init i = {
+	struct lib_rflow_init i = {
 		.amp_bin_count  = 12,
 		.mean_bin_count = 1,
 		.mean_min       = -6.0,
