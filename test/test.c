@@ -46,7 +46,14 @@ static const double test_data_1[] = {
 	1.1, -4.6, -0.2, -3.5, -0.8, -2.7, 6.0
 }; /* http://nal-ir.nal.res.in/9082/1/K.L_._SIngh_and_V.R.Ramganath.pdf */
 /*****************************************************************************/
-static const double test_simple_merge[] = {
+static const double test_data_2[] = {
+	 1.0, -3.0,
+	-1.0, -4.0,
+	 0.0, -5.0,
+	 0.0
+};
+/*****************************************************************************/
+static const double test_data_3[] = {
 	1.0, -2.0,
 	0.0, -3.0,
 	2.0
