@@ -39,7 +39,7 @@
 *                                    TYPES                                    *
 ******************************************************************************/
 struct matrix_mem {
-	struct rf_matrix matrix;
+	struct lib_rflow_matrix matrix;
 	unsigned bins[];
 };
 /*****************************************************************************/
@@ -48,7 +48,7 @@ public:
 	uint32_t                         mode;
 	std::unique_ptr<cycle_processor> proc;
 	std::unique_ptr<rf_state>        rstate;
-	struct rf_matrix                *matrix;
+	struct lib_rflow_matrix                *matrix;
 
 	lib_rflow_state(const struct lib_rflow_init *init);
 };
@@ -68,7 +68,7 @@ static size_t cstr_copy(const std::string &s, char **copy)
 	return len;
 }
 /*****************************************************************************/
-static size_t string_matrix(const struct rf_matrix *m, char **cstr_out)
+static size_t string_matrix(const struct lib_rflow_matrix *m, char **cstr_out)
 {
 	std::ostringstream stream;
 
@@ -86,7 +86,7 @@ static size_t string_matrix(const struct rf_matrix *m, char **cstr_out)
 	return cstr_copy(stream.str(), cstr_out);
 }
 /*****************************************************************************/
-static rf_matrix* build_matrix(const struct lib_rflow_init *init)
+static lib_rflow_matrix* build_matrix(const struct lib_rflow_init *init)
 {
 	uint32_t mode = init->opts & LIB_RFLOW_MODE_MASK;
 
@@ -99,7 +99,7 @@ static rf_matrix* build_matrix(const struct lib_rflow_init *init)
 	               * init->mode_data.matrix_data.mean_bin_count;
 
 	m = (struct matrix_mem*)malloc(
-		sizeof(struct rf_matrix) + cells * sizeof(m->bins[0])
+		sizeof(struct lib_rflow_matrix) + cells * sizeof(m->bins[0])
 	);
 	if(m == NULL) {
 		throw std::bad_alloc{};
@@ -187,7 +187,7 @@ int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num)
 }
 /*****************************************************************************/
 extern "C"
-struct rf_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s)
+struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s)
 {
 	try {
 		return s->matrix;
@@ -246,7 +246,8 @@ void lib_rflow_destroy(struct lib_rflow_state *s)
 }
 /*****************************************************************************/
 extern "C"
-size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out)
+size_t lib_rflow_string_matrix(const struct lib_rflow_matrix *m,
+                               char **cstr_out)
 {
 	*cstr_out = NULL;
 	try {

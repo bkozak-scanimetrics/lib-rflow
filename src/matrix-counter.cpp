@@ -29,7 +29,7 @@ void matrix_counter::end_history(void)
 {
 }
 /*****************************************************************************/
-const struct rf_matrix * matrix_counter::get_matrix(void) const
+const struct lib_rflow_matrix * matrix_counter::get_matrix(void) const
 {
 	return matrix;
 }
@@ -43,7 +43,7 @@ void matrix_counter::proc_cycle(const rf_cycle &c)
 	}
 }
 /*****************************************************************************/
-matrix_counter::matrix_counter(struct rf_matrix *m)
+matrix_counter::matrix_counter(struct lib_rflow_matrix *m)
 : matrix{m}
 {
 

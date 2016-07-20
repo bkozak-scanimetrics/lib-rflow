@@ -69,7 +69,7 @@ struct lib_rflow_init {
 	} mode_data;
 };
 /*****************************************************************************/
-struct rf_matrix {
+struct lib_rflow_matrix {
 	int      amp_bin_count;
 	int      mean_bin_count;
 	double   mean_min;
@@ -89,11 +89,12 @@ struct lib_rflow_state* lib_rflow_init(const struct lib_rflow_init *init);
 EXPORT
 int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num);
 EXPORT
-struct rf_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s);
+struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s);
 EXPORT
 void lib_rflow_destroy(struct lib_rflow_state *s);
 EXPORT
-size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out);
+size_t lib_rflow_string_matrix(const struct lib_rflow_matrix *m,
+                               char **cstr_out);
 EXPORT
 size_t lib_rflow_pop_cycles(struct lib_rflow_state *s,
                             struct lib_rflow_cycle **p);
@@ -107,21 +108,23 @@ int lib_rflow_end_history(struct lib_rflow_state *s);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
-static inline double lib_rflow_matrix_mean_max(const struct rf_matrix *m)
+static inline double lib_rflow_matrix_mean_max(
+	const struct lib_rflow_matrix *m
+)
 {
 	double mean_max =   m->mean_min
 	                  + (double)m->mean_bin_count * m->mean_bin_size;
 	return mean_max;
 }
 /*****************************************************************************/
-static inline double lib_rflow_matrix_amp_max(const struct rf_matrix *m)
+static inline double lib_rflow_matrix_amp_max(const struct lib_rflow_matrix *m)
 {
 	double amp_max  =   m->amp_min
 	                  + (double)m->amp_bin_count * m->amp_bin_size;
 	return amp_max;
 }
 /*****************************************************************************/
-static inline unsigned* lib_rflow_bin_ptr(const struct rf_matrix *m,
+static inline unsigned* lib_rflow_bin_ptr(const struct lib_rflow_matrix *m,
                                           double amp, double mean)
 {
 	double mean_max = lib_rflow_matrix_mean_max(m);

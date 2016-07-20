@@ -29,14 +29,14 @@
 ******************************************************************************/
 class matrix_counter : public cycle_processor {
 private:
-	struct rf_matrix *const matrix;
+	struct lib_rflow_matrix *const matrix;
 public:
-	matrix_counter(struct rf_matrix *m);
+	matrix_counter(struct lib_rflow_matrix *m);
 
 	void proc_cycle(const rf_cycle &c);
 	void end_history(void);
 
-	const struct rf_matrix *get_matrix(void) const;
+	const struct lib_rflow_matrix *get_matrix(void) const;
 };
 /*****************************************************************************/
 #endif /* MATRIX_COUNTER_H_ */
