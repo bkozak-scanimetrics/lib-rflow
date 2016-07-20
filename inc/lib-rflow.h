@@ -25,6 +25,7 @@ extern "C" {
 *                                  INCLUDES                                   *
 ******************************************************************************/
 #include <stdlib.h>
+#include <stdint.h>
 /******************************************************************************
 *                                   DEFINES                                   *
 ******************************************************************************/
@@ -33,17 +34,39 @@ extern "C" {
 #else
 #error "compiler not supported"
 #endif
+
+#define LIB_RFLOW_MODE_MASK         0x03
+#define LIB_RFLOW_MODE_PASSTHROUGH  0x00
+#define LIB_RFLOW_MODE_MATRIX       0x01
+#define LIB_RFLOW_MODE_CUSTOM       0x02
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
+struct lib_rflow_cycle {
+	double cycle_start;
+	double cycle_end;
+};
+/*****************************************************************************/
 struct lib_rflow_init {
-	int amp_bin_count;
-	int mean_bin_count;
 
-	double mean_min;
-	double amp_min;
-	double mean_bin_size;
-	double amp_bin_size;
+	uint32_t opts;
+
+	union {
+		struct {
+			int amp_bin_count;
+			int mean_bin_count;
+
+			double mean_min;
+			double amp_min;
+			double mean_bin_size;
+			double amp_bin_size;
+		} matrix_data;
+		struct {
+			void (*proc)(const struct lib_rflow_cycle *, void*);
+			void (*fini)(void*);
+			void *state;
+		} custom_data;
+	} mode_data;
 };
 /*****************************************************************************/
 struct rf_matrix {
@@ -55,11 +78,6 @@ struct rf_matrix {
 	double   amp_bin_size;
 
 	unsigned *bins;
-};
-/*****************************************************************************/
-struct lib_rflow_cycle {
-	double cycle_start;
-	double cycle_end;
 };
 /*****************************************************************************/
 struct lib_rflow_state;
@@ -76,6 +94,16 @@ EXPORT
 void lib_rflow_destroy(struct lib_rflow_state *s);
 EXPORT
 size_t lib_rflow_string_matrix(const struct rf_matrix *m, char **cstr_out);
+EXPORT
+size_t lib_rflow_pop_cycles(struct lib_rflow_state *s,
+                            struct lib_rflow_cycle **p);
+EXPORT
+size_t lib_rflow_pop_cycles_replace_mem(
+	struct lib_rflow_state *s, struct lib_rflow_cycle **p,
+	struct lib_rflow_cycle *new_mem,  size_t new_mem_size
+);
+EXPORT
+int lib_rflow_end_history(struct lib_rflow_state *s);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/

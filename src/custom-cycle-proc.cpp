@@ -40,7 +40,7 @@ custom_cycle_proc::~custom_cycle_proc(void)
 }
 /*****************************************************************************/
 custom_cycle_proc::
-custom_cycle_proc(processor func, finisher fini, void *state)
+custom_cycle_proc(processor proc, finisher fini, void *state)
 : proc{proc}, fini{fini}, state{state}
 {
 }

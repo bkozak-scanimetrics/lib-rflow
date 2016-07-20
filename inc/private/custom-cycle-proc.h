@@ -32,7 +32,7 @@ public:
 	typedef void (*processor)(const struct lib_rflow_cycle *, void*);
 	typedef void (*finisher)(void*);
 
-	custom_cycle_proc(processor func, finisher fini, void *state);
+	custom_cycle_proc(processor proc, finisher fini, void *state);
 	~custom_cycle_proc(void);
 	void proc_cycle(const rf_cycle &c);
 	void end_history(void);

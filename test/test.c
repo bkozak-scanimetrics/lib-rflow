@@ -55,30 +55,27 @@ static const double test_simple_merge[] = {
 static void test_0(void)
 {
 	struct lib_rflow_state  *state;
-	struct rf_matrix *matrix;
-	char *string_matrix;
+	struct lib_rflow_cycle *cycles;
+	size_t                 num_cycles;
 	struct lib_rflow_init i = {
-		.amp_bin_count  = 12,
-		.mean_bin_count = 1,
-		.mean_min       = -6.0,
-		.amp_min        = 0.0,
-		.mean_bin_size  = 12.0,
-		.amp_bin_size   = 1.0
+		.opts           = LIB_RFLOW_MODE_PASSTHROUGH
 	};
 
 	state = lib_rflow_init(&i);
-	matrix = lib_rflow_get_matrix(state);
 
 	lib_rflow_count(state, test_data_0, ARR_SIZE(test_data_0));
+	lib_rflow_end_history(state);
+
+	num_cycles = lib_rflow_pop_cycles(state, &cycles);
+	for(size_t i = 0; i < num_cycles; i++) {
+		printf(
+			"cycle %d %lf -> %lf\n",
+			i, cycles[i].cycle_start, cycles[i].cycle_end
+		);
+	}
 
 	lib_rflow_destroy(state);
-
-	lib_rflow_string_matrix(matrix, &string_matrix);
-
-	printf("%s", string_matrix);
-
-	free(string_matrix);
-	free(matrix);
+	free(cycles);
 }
 /*****************************************************************************/
 int main(int argc, char **argv)
