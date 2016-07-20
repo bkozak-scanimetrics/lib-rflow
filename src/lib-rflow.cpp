@@ -233,7 +233,7 @@ size_t lib_rflow_pop_cycles_replace_mem(
 	}
 	try {
 		auto *pt = static_cast<cycle_passthrough*>(&*s->proc);
-		return pt->pop_cycle_list(p);
+		return pt->pop_cycle_list(p, new_mem, new_mem_size);
 	}  catch(...) {
 		return 0;
 	}
