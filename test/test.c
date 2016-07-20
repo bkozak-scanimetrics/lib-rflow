@@ -27,6 +27,8 @@
 *                                   DEFINES                                   *
 ******************************************************************************/
 #define ARR_SIZE(a) (sizeof(a)/sizeof(a[0]))
+
+#define ABS(i) ((i) < 0 ? -(i) : (i))
 /******************************************************************************
 *                                    DATA                                     *
 ******************************************************************************/
@@ -69,8 +71,9 @@ static void test_0(void)
 	num_cycles = lib_rflow_pop_cycles(state, &cycles);
 	for(size_t i = 0; i < num_cycles; i++) {
 		printf(
-			"cycle %d %lf -> %lf\n",
-			i, cycles[i].cycle_start, cycles[i].cycle_end
+			"cycle %d %lf -> %lf mag: %lf\n",
+			i + 1, cycles[i].cycle_start, cycles[i].cycle_end,
+			ABS(cycles[i].cycle_start - cycles[i].cycle_end)
 		);
 	}
 
