@@ -132,15 +132,19 @@ lib_rflow_state::lib_rflow_state(const struct lib_rflow_init *init)
 		switch(mode) {
 		case LIB_RFLOW_MODE_PASSTHROUGH:
 			proc.reset(new cycle_passthrough());
+			break;
 		case LIB_RFLOW_MODE_MATRIX:
 			proc.reset(new matrix_counter(build_matrix(init)));
+			break;
 		case LIB_RFLOW_MODE_CUSTOM:
 			p_func  = init->mode_data.custom_data.proc;
 			fini    = init->mode_data.custom_data.fini;
 			state   = init->mode_data.custom_data.state;
 			proc.reset(new custom_cycle_proc(p_func, fini, state));
+			break;
 		default:
 			throw std::runtime_error{"bad mode argument"};
+			break;
 		}
 
 		rstate.reset(new rf_state(&*proc));
