@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
@@ -45,16 +46,20 @@ struct matrix_mem {
 /*****************************************************************************/
 struct lib_rflow_state {
 public:
-	uint32_t                         mode;
+	const uint32_t                   mode;
 	std::unique_ptr<cycle_processor> proc;
-	std::unique_ptr<rf_state>        rstate;
-	struct lib_rflow_matrix                *matrix;
+	rf_state                         rstate;
 
 	lib_rflow_state(const struct lib_rflow_init *init);
 };
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
+static uint32_t extract_mode(const struct lib_rflow_init *init)
+{
+	return init->opts & LIB_RFLOW_MODE_MASK;
+}
+/*****************************************************************************/
 static size_t cstr_copy(const std::string &s, char **copy)
 {
 	size_t len = s.size() + 1;
@@ -86,23 +91,21 @@ static size_t string_matrix(const struct lib_rflow_matrix *m, char **cstr_out)
 	return cstr_copy(stream.str(), cstr_out);
 }
 /*****************************************************************************/
-static lib_rflow_matrix* build_matrix(const struct lib_rflow_init *init)
+static int build_matrix(struct lib_rflow_init *init)
 {
-	uint32_t mode = init->opts & LIB_RFLOW_MODE_MASK;
-
-	if(mode != LIB_RFLOW_MODE_MATRIX) {
-		return NULL;
-	}
-
 	struct matrix_mem *m  = NULL;
 	size_t cells =   init->mode_data.matrix_data.amp_bin_count
 	               * init->mode_data.matrix_data.mean_bin_count;
+
+	if(init->mode_data.matrix_data._matrix != NULL) {
+		return 0;
+	}
 
 	m = (struct matrix_mem*)malloc(
 		sizeof(struct lib_rflow_matrix) + cells * sizeof(m->bins[0])
 	);
 	if(m == NULL) {
-		throw std::bad_alloc{};
+		return 1;
 	}
 
 	m->matrix.amp_bin_count  = init->mode_data.matrix_data.amp_bin_count;
@@ -113,61 +116,64 @@ static lib_rflow_matrix* build_matrix(const struct lib_rflow_init *init)
 	m->matrix.amp_bin_size   = init->mode_data.matrix_data.amp_bin_size;
 
 	m->matrix.bins            = m->bins;
-	return &m->matrix;
+
+	init->mode_data.matrix_data._matrix = &m->matrix;
+
+	return 0;
+}
+/*****************************************************************************/
+cycle_processor *build_processor(const struct lib_rflow_init *init)
+{
+	uint32_t mode = extract_mode(init);
+	custom_cycle_proc::processor proc;
+	custom_cycle_proc::finisher  fini;
+	void     *state;
+
+	switch(mode) {
+	case LIB_RFLOW_MODE_PASSTHROUGH:
+		return new cycle_passthrough();
+	case LIB_RFLOW_MODE_MATRIX:
+		return new matrix_counter(init->mode_data.matrix_data._matrix);
+	case LIB_RFLOW_MODE_CUSTOM:
+		proc    = init->mode_data.custom_data.proc;
+		fini    = init->mode_data.custom_data.fini;
+		state   = init->mode_data.custom_data.state;
+		return new custom_cycle_proc(proc, fini, state);
+	default:
+		throw std::runtime_error{"bad mode argument"};
+		break;
+	}
+	return NULL;
 }
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
 lib_rflow_state::lib_rflow_state(const struct lib_rflow_init *init)
+: mode{extract_mode(init)}, proc{build_processor(init)}, rstate{&*proc}
 {
-	mode = init->opts & LIB_RFLOW_MODE_MASK;
-
-	custom_cycle_proc::processor  p_func;
-	custom_cycle_proc::finisher   fini;
-	void                        *state;
-
-	matrix = build_matrix(init);
-
-	try {
-		switch(mode) {
-		case LIB_RFLOW_MODE_PASSTHROUGH:
-			proc.reset(new cycle_passthrough());
-			break;
-		case LIB_RFLOW_MODE_MATRIX:
-			proc.reset(new matrix_counter(build_matrix(init)));
-			break;
-		case LIB_RFLOW_MODE_CUSTOM:
-			p_func  = init->mode_data.custom_data.proc;
-			fini    = init->mode_data.custom_data.fini;
-			state   = init->mode_data.custom_data.state;
-			proc.reset(new custom_cycle_proc(p_func, fini, state));
-			break;
-		default:
-			throw std::runtime_error{"bad mode argument"};
-			break;
-		}
-
-		rstate.reset(new rf_state(&*proc));
-
-	} catch(const std::runtime_error &exc) {
-		free(matrix);
-		throw exc;
-	} catch(...) {
-		free(matrix);
-		throw std::bad_alloc{};
-	}
 }
 /******************************************************************************
 *                              GLOBAL FUNCTIONS                               *
 ******************************************************************************/
 extern "C"
-struct lib_rflow_state* lib_rflow_init(const struct lib_rflow_init *init)
+struct lib_rflow_state* lib_rflow_init(struct lib_rflow_init *init)
 {
+	uint32_t mode = extract_mode(init);
+
+	if(mode == LIB_RFLOW_MODE_MATRIX) {
+		if(build_matrix(init)) {
+			errno = ENOMEM;
+			goto fail;
+		}
+	}
+
 	try {
 		return new lib_rflow_state(init);
 	}  catch(std::bad_alloc& exc) {
+		errno = ENOMEM;
 		goto fail;
 	} catch(...) {
+		errno = EINVAL;
 		goto fail;
 	}
 
@@ -179,7 +185,7 @@ extern "C"
 int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num)
 {
 	try {
-		s->rstate->count(arr, num);
+		s->rstate.count(arr, num);
 		return 0;
 	} catch(...) {
 		return 1;
@@ -187,10 +193,15 @@ int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num)
 }
 /*****************************************************************************/
 extern "C"
-struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s)
+const struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s)
 {
+	if(s->mode != LIB_RFLOW_MODE_MATRIX) {
+		return NULL;
+	}
+
 	try {
-		return s->matrix;
+		auto mc = static_cast<matrix_counter*>(&*s->proc);
+		return mc->get_matrix();
 	} catch(...) {
 		return NULL;
 	}
@@ -232,7 +243,7 @@ extern "C"
 int lib_rflow_end_history(struct lib_rflow_state *s)
 {
 	try {
-		s->rstate->terminate();
+		s->rstate.terminate();
 		return 0;
 	} catch(...) {
 		return 1;

@@ -47,6 +47,17 @@ struct lib_rflow_cycle {
 	double cycle_end;
 };
 /*****************************************************************************/
+struct lib_rflow_matrix {
+	int      amp_bin_count;
+	int      mean_bin_count;
+	double   mean_min;
+	double   amp_min;
+	double   mean_bin_size;
+	double   amp_bin_size;
+
+	unsigned *bins;
+};
+/*****************************************************************************/
 struct lib_rflow_init {
 
 	uint32_t opts;
@@ -60,6 +71,8 @@ struct lib_rflow_init {
 			double amp_min;
 			double mean_bin_size;
 			double amp_bin_size;
+
+			struct lib_rflow_matrix *_matrix;
 		} matrix_data;
 		struct {
 			void (*proc)(const struct lib_rflow_cycle *, void*);
@@ -69,27 +82,16 @@ struct lib_rflow_init {
 	} mode_data;
 };
 /*****************************************************************************/
-struct lib_rflow_matrix {
-	int      amp_bin_count;
-	int      mean_bin_count;
-	double   mean_min;
-	double   amp_min;
-	double   mean_bin_size;
-	double   amp_bin_size;
-
-	unsigned *bins;
-};
-/*****************************************************************************/
 struct lib_rflow_state;
 /******************************************************************************
 *                             FUNCTION PROTOTYPES                             *
 ******************************************************************************/
 EXPORT
-struct lib_rflow_state* lib_rflow_init(const struct lib_rflow_init *init);
+struct lib_rflow_state* lib_rflow_init(struct lib_rflow_init *init);
 EXPORT
 int lib_rflow_count(struct lib_rflow_state *s, const double *arr, size_t num);
 EXPORT
-struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s);
+const struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s);
 EXPORT
 void lib_rflow_destroy(struct lib_rflow_state *s);
 EXPORT
