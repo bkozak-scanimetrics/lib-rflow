@@ -16,27 +16,30 @@
 * You should have received a copy of the GNU General Public License           *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
-#ifndef MATRIX_COUNTER_H_
-#define MATRIX_COUNTER_H_
+#ifndef CUSTOM_CYCLE_PROC_H_
+#define CUSTOM_CYCLE_PROC_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "lib-rflow.h"
 #include "private/cycle-processor.h"
-#include "private/rf-cycle.h"
+
+#include "lib-rflow.h"
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
-class matrix_counter : public cycle_processor {
-private:
-	struct lib_rflow_matrix *const matrix;
+class custom_cycle_proc : public cycle_processor {
 public:
-	matrix_counter(struct lib_rflow_matrix *m);
+	typedef void (*processor)(const struct lib_rflow_cycle *, void*);
+	typedef void (*finisher)(void*);
 
+	custom_cycle_proc(processor proc, finisher fini, void *state);
+	~custom_cycle_proc(void);
 	void proc_cycle(const rf_cycle &c);
 	void end_history(void);
-
-	const struct lib_rflow_matrix *get_matrix(void) const;
+private:
+	const processor proc;
+	const finisher  fini;
+	void *const state;
 };
 /*****************************************************************************/
-#endif /* MATRIX_COUNTER_H_ */
+#endif /* CUSTOM_CYCLE_PROC_H_ */

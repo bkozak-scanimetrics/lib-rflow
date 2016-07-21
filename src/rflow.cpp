@@ -35,13 +35,15 @@ find_merge_point(const std::list<rf_cycle>::iterator &start,
                  const rf_cycle &item)
 {
 	auto i = start;
-	for(i++; i != end; i++) {
-		if(item.needs_merge(*i)) {
-			break;
-		}
-	}
+	i++;
 
-	return i;
+	if(i == end) {
+		return end;
+	} else if(item.needs_merge(*i)) {
+		return i;
+	} else {
+		return end;
+	}
 }
 /******************************************************************************
 *                               PRIVATE METHODS                               *
@@ -179,13 +181,10 @@ void rf_state::do_merges(void)
 		if(merge_point != l->end()) {
 			i->merge(&*merge_point);
 			count_finished_cycle(*i);
-			i = l->erase(i);
+			l->erase(i);
+			i = merge_point;
 		} else {
-			/* TODO - should we actually just break out here?
-			   I think that it shouldn't be possible for merges
-			   to take place unless the cycle has just been added
-			   or has just been merged into. */
-			i++;
+			break;
 		}
 	}
 }

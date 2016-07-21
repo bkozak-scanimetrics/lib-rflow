@@ -16,27 +16,32 @@
 * You should have received a copy of the GNU General Public License           *
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.       *
 ******************************************************************************/
-#ifndef MATRIX_COUNTER_H_
-#define MATRIX_COUNTER_H_
 /******************************************************************************
 *                                  INCLUDES                                   *
 ******************************************************************************/
-#include "lib-rflow.h"
-#include "private/cycle-processor.h"
-#include "private/rf-cycle.h"
+#include "private/custom-cycle-proc.h"
 /******************************************************************************
-*                                    TYPES                                    *
+*                               PUBLIC METHODS                                *
 ******************************************************************************/
-class matrix_counter : public cycle_processor {
-private:
-	struct lib_rflow_matrix *const matrix;
-public:
-	matrix_counter(struct lib_rflow_matrix *m);
-
-	void proc_cycle(const rf_cycle &c);
-	void end_history(void);
-
-	const struct lib_rflow_matrix *get_matrix(void) const;
-};
+void custom_cycle_proc::end_history(void)
+{
+	fini(state);
+}
 /*****************************************************************************/
-#endif /* MATRIX_COUNTER_H_ */
+void custom_cycle_proc::proc_cycle(const rf_cycle &c)
+{
+	struct lib_rflow_cycle cycle{c.get_cycle_start(), c.get_cycle_end()};
+
+	proc(&cycle, state);
+}
+/*****************************************************************************/
+custom_cycle_proc::~custom_cycle_proc(void)
+{
+}
+/*****************************************************************************/
+custom_cycle_proc::
+custom_cycle_proc(processor proc, finisher fini, void *state)
+: proc{proc}, fini{fini}, state{state}
+{
+}
+/*****************************************************************************/
