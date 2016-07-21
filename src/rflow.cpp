@@ -35,13 +35,15 @@ find_merge_point(const std::list<rf_cycle>::iterator &start,
                  const rf_cycle &item)
 {
 	auto i = start;
-	for(i++; i != end; i++) {
-		if(item.needs_merge(*i)) {
-			break;
-		}
-	}
+	i++;
 
-	return i;
+	if(i == end) {
+		return end;
+	} else if(item.needs_merge(*i)) {
+		return i;
+	} else {
+		return end;
+	}
 }
 /******************************************************************************
 *                               PRIVATE METHODS                               *
