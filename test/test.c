@@ -94,6 +94,21 @@ static const struct lib_rflow_cycle test3_expected[] = {
 	{ 1.0, -3.0},
 	{-3.0,  2.0}
 };
+/*****************************************************************************/
+static const double test4_data[] = {
+	2.0, -2.0,
+	1.0, -1.0,
+	0.0, -4.0,
+	3.0
+};
+static const struct lib_rflow_cycle test4_expected[] = {
+	{-1.0,  0.0},
+	{-2.0,  1.0},
+	{ 0.0, -1.0},
+	{ 1.0, -2.0},
+	{ 2.0, -4.0},
+	{-4.0,  3.0}
+};
 /******************************************************************************
 *                                   MACROS                                    *
 ******************************************************************************/
@@ -131,8 +146,6 @@ static void assert_cycles_equal(
 	}
 }
 /*****************************************************************************/
-
-/*****************************************************************************/
 static void test_0(void)
 {
 	TEST_CYCLES_EXPECTED(test0_data, test0_expected);
@@ -153,6 +166,11 @@ static void test_3(void)
 	TEST_CYCLES_EXPECTED(test3_data, test3_expected);
 }
 /*****************************************************************************/
+static void test_4(void)
+{
+	TEST_CYCLES_EXPECTED(test4_data, test4_expected);
+}
+/*****************************************************************************/
 int main(int argc, char **argv)
 {
 	TEST_BLOCK_START();
@@ -160,6 +178,7 @@ int main(int argc, char **argv)
 	RUN_TEST(test_1);
 	RUN_TEST(test_2);
 	RUN_TEST(test_3);
+	RUN_TEST(test_4);
 	TEST_BLOCK_END();
 }
 /*****************************************************************************/
