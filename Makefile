@@ -34,6 +34,8 @@ NO_DEPS_TARGETS += clean directories dir_clean
 SOURCE_TREE := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 TEST_CFLAGS += -Wall -std=c99 -g
+
+INSTALL_PREFIX := /usr/local
 ###############################################################################
 #                                 BUILD DIRS                                  #
 ###############################################################################
@@ -46,6 +48,8 @@ SRC_TREE += src
 
 INC_DIRS += inc
 SRC_DIRS += src
+
+LIB_INC += inc
 ###############################################################################
 #                                 BUILD FILES                                 #
 ###############################################################################
@@ -55,6 +59,9 @@ C_FILES   += $(foreach f, $(C_PATHS),$(notdir $(f)))
 OBJ_FILES += $(foreach f,$(C_FILES),$(BUILD_DIR)/$(patsubst %.cpp,%.o,$(f)))
 DEP_FILES += $(foreach f,$(C_FILES),$(BUILD_DIR)/$(patsubst %.cpp,%.d,$(f)))
 ASM_GEN   += $(foreach f,$(C_FILES),$(ASM_GEN_DIR)/$(patsubst %.cpp,%.s,$(f)))
+
+LIB_HEADER_PATHS += $(wildcard $(LIB_INC)/*.h)
+LIB_HEADER_FILES += $(foreach f, $(LIB_HEADER_PATHS), $(notdir $(f)))
 
 TEST_SOURCE := $(TEST_DIR)/test.c
 
@@ -87,13 +94,23 @@ debug: CFLAGS += -DDEBUG=1 -g
 debug: LDFLAGS += -g
 debug: $(BINARY)
 
-optomized: CFLAGS += -DNDEBUG=1 -march=native -g -Os -flto
-optomized: LDFLAGS += -march=native -g -Os -flto
+optomized: CFLAGS += -DNDEBUG=1 -march=native -Os -flto
+optomized: LDFLAGS += -march=native -Os -flto
 optomized: $(BINARY)
 
 asg_gen: CFLAGS += -fverbose-asm
 asm_gen: CFLAGS += -DNDEBUG=1 -march=native -Os -flto
 asm_gen: $(ASM_GEN)
+
+install: optomized
+	cp $(BINARY) $(INSTALL_PREFIX)/lib/$(PROJECT)
+	cp $(LIB_HEADER_PATHS) $(INSTALL_PREFIX)/include/
+	ldconfig
+
+uninstall:
+	rm -f $(INSTALL_PREFIX)/lib/$(PROJECT)
+	rm -f $(foreach f, $(LIB_HEADER_FILES), $(INSTALL_PREFIX)/include/$(f))
+	ldconfig
 
 debug_test: $(DEBUG_TEST)
 release_test: $(RELEASE_TEST)
