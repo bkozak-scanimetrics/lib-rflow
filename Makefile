@@ -115,7 +115,7 @@ $(BUILD_DIR)/%.d: %.cpp | $(BUILD_DIR)/.dir_dummy
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)/.dir_dummy
 	$(CXX) $(CFLAGS) -c $< -o $@
 
-$(ASM_GEN): $(ASM_GEN_DIR)/%.s : %.c | $(ASM_GEN_DIR)/.dir_dummy
+$(ASM_GEN): $(ASM_GEN_DIR)/%.s : %.cpp | $(ASM_GEN_DIR)/.dir_dummy
 	$(CXX) $(CFLAGS) -S $< -o $@
 
 $(BINARY): $(OBJ_FILES) | $(EXE_DIR)/.dir_dummy
