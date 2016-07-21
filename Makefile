@@ -64,6 +64,7 @@ LIB_HEADER_PATHS += $(wildcard $(LIB_INC)/*.h)
 LIB_HEADER_FILES += $(foreach f, $(LIB_HEADER_PATHS), $(notdir $(f)))
 
 TEST_SOURCE := $(TEST_DIR)/test.c
+TEST_HEADER := $(TEST_DIR)/test.h
 
 LIBS = -lrt -lm
 
@@ -140,12 +141,12 @@ $(BINARY): $(OBJ_FILES) | $(EXE_DIR)/.dir_dummy
 
 $(DEBUG_TEST): CFLAGS += -DDEBUG=1 -g
 $(DEBUG_TEST): LDFLAGS += -g
-$(DEBUG_TEST): $(TEST_SOURCE) $(BINARY)
+$(DEBUG_TEST): $(TEST_SOURCE) $(TEST_HEADER) $(BINARY)
 	$(CC) $(TEST_CFLAGS) $(TEST_SOURCE) -l:$(BINARY) -o $(DEBUG_TEST)
 
 $(RELEASE_TEST): CFLAGS += -DNDEBUG=1 -march=native -g -Os -flto
 $(RELEASE_TEST): LDFLAGS += -march=native -g -Os -flto
-$(RELEASE_TEST): $(TEST_SOURCE) $(BINARY)
+$(RELEASE_TEST): $(TEST_SOURCE) $(TEST_HEADER) $(BINARY)
 	$(CC) $(TEST_CFLAGS) $(TEST_SOURCE) -l:$(BINARY) -o $(RELEASE_TEST)
 
 clean:
