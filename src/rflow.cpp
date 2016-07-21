@@ -179,13 +179,10 @@ void rf_state::do_merges(void)
 		if(merge_point != l->end()) {
 			i->merge(&*merge_point);
 			count_finished_cycle(*i);
-			i = l->erase(i);
+			l->erase(i);
+			i = merge_point;
 		} else {
-			/* TODO - should we actually just break out here?
-			   I think that it shouldn't be possible for merges
-			   to take place unless the cycle has just been added
-			   or has just been merged into. */
-			i++;
+			break;
 		}
 	}
 }
