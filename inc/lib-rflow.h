@@ -117,6 +117,12 @@ size_t lib_rflow_cycle_list_size(const struct lib_rflow_state *s);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
+static inline void lib_rflow_get_empty_list(struct lib_rflow_list *l)
+{
+	struct lib_rflow_list empty = LIB_RFLOW_EMPTY_LIST;
+	*l = empty;
+}
+/*****************************************************************************/
 static inline int lib_rflow_alloc_list(size_t size, struct lib_rflow_list *l)
 {
 	struct lib_rflow_cycle *arr;
