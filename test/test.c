@@ -118,18 +118,17 @@ static const struct lib_rflow_cycle test4_expected[] = {
 #define TEST_CYCLES_EXPECTED(arr_data, arr_expected) \
 do{ \
 	struct lib_rflow_state  *state; \
-	struct lib_rflow_cycle *cycles; \
-	size_t                 num_cycles; \
+	struct lib_rflow_list  list; \
 	struct lib_rflow_init i = { \
 		.opts           = LIB_RFLOW_MODE_PASSTHROUGH \
 	}; \
 	state = lib_rflow_init(&i); \
 	lib_rflow_count(state, arr_data, ARR_SIZE(arr_data)); \
 	lib_rflow_end_history(state); \
-	num_cycles = lib_rflow_pop_cycles(state, &cycles); \
-	ASSERT_CYCLES_EXPECTED(num_cycles, cycles, arr_expected); \
+	lib_rflow_pop_cycles(state, &list); \
+	ASSERT_CYCLES_EXPECTED(list.num_cycles, list.cycles, arr_expected); \
 	lib_rflow_destroy(state); \
-	free(cycles); \
+	lib_rflow_free_list(&list); \
 } while(0)
 /******************************************************************************
 *                            FUNCTION DEFINITIONS                             *

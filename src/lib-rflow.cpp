@@ -210,34 +210,35 @@ const struct lib_rflow_matrix* lib_rflow_get_matrix(struct lib_rflow_state *s)
 }
 /*****************************************************************************/
 extern "C"
-size_t lib_rflow_pop_cycles(struct lib_rflow_state *s,
-                            struct lib_rflow_cycle **p)
+int lib_rflow_pop_cycles(struct lib_rflow_state *s, struct lib_rflow_list *l)
 {
 	if(s->mode != LIB_RFLOW_MODE_PASSTHROUGH) {
-		return 0;
+		return 1;
 	}
 	try {
 		auto *pt = static_cast<cycle_passthrough*>(&*s->proc);
-		return pt->pop_cycle_list(p);
-	}  catch(...) {
+		*l = pt->pop_cycle_list();
 		return 0;
+	}  catch(...) {
+		return 1;
 	}
 }
 /*****************************************************************************/
 extern "C"
-size_t lib_rflow_pop_cycles_replace_mem(
-	struct lib_rflow_state *s, struct lib_rflow_cycle **p,
-	struct lib_rflow_cycle *new_mem,  size_t new_mem_size
+int lib_rflow_pop_cycles_replace_mem(
+	struct lib_rflow_state *s, struct lib_rflow_list *l,
+	const struct lib_rflow_list *new_mem
 )
 {
 	if(s->mode != LIB_RFLOW_MODE_PASSTHROUGH) {
-		return 0;
+		return 1;
 	}
 	try {
 		auto *pt = static_cast<cycle_passthrough*>(&*s->proc);
-		return pt->pop_cycle_list(p, new_mem, new_mem_size);
-	}  catch(...) {
+		*l = pt->pop_cycle_list(new_mem);
 		return 0;
+	}  catch(...) {
+		return 1;
 	}
 }
 /*****************************************************************************/

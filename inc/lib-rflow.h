@@ -47,6 +47,12 @@ struct lib_rflow_cycle {
 	double cycle_end;
 };
 /*****************************************************************************/
+struct lib_rflow_list {
+	struct lib_rflow_cycle *cycles;
+	size_t                  num_cycles;
+	size_t                  mem_size;
+};
+/*****************************************************************************/
 struct lib_rflow_matrix {
 	int      amp_bin_count;
 	int      mean_bin_count;
@@ -96,18 +102,39 @@ EXPORT
 size_t lib_rflow_string_matrix(const struct lib_rflow_matrix *m,
                                char **cstr_out);
 EXPORT
-size_t lib_rflow_pop_cycles(struct lib_rflow_state *s,
-                            struct lib_rflow_cycle **p);
+int lib_rflow_pop_cycles(struct lib_rflow_state *s, struct lib_rflow_list *l);
 EXPORT
-size_t lib_rflow_pop_cycles_replace_mem(
-	struct lib_rflow_state *s, struct lib_rflow_cycle **p,
-	struct lib_rflow_cycle *new_mem,  size_t new_mem_size
+int lib_rflow_pop_cycles_replace_mem(
+	struct lib_rflow_state *s, struct lib_rflow_list *l,
+	const struct lib_rflow_list *new_mem
 );
 EXPORT
 int lib_rflow_end_history(struct lib_rflow_state *s);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
+static inline int lib_rflow_alloc_list(size_t size, struct lib_rflow_list *l)
+{
+	struct lib_rflow_cycle *arr;
+	arr = (struct lib_rflow_cycle *)malloc(
+		size * sizeof(*arr)
+	);
+	if(arr == NULL) {
+		return 1;
+	}
+
+	l->cycles     = arr;
+	l->num_cycles = 0;
+	l->mem_size   = size;
+
+	return 0;
+}
+/*****************************************************************************/
+static inline void lib_rflow_free_list(struct lib_rflow_list *l)
+{
+	free(l->cycles);
+}
+/*****************************************************************************/
 static inline double lib_rflow_matrix_mean_max(
 	const struct lib_rflow_matrix *m
 )
