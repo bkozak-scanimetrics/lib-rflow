@@ -243,6 +243,21 @@ int lib_rflow_pop_cycles_replace_mem(
 }
 /*****************************************************************************/
 extern "C"
+size_t lib_rflow_cycle_list_size(const struct lib_rflow_state *s)
+{
+	if(s->mode != LIB_RFLOW_MODE_PASSTHROUGH) {
+		return 0;
+	}
+
+	try {
+		auto *pt = static_cast<cycle_passthrough*>(&*s->proc);
+		return pt->list_size();
+	}  catch(...) {
+		return 0;
+	}
+}
+/*****************************************************************************/
+extern "C"
 int lib_rflow_end_history(struct lib_rflow_state *s)
 {
 	try {

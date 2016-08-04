@@ -92,6 +92,11 @@ void cycle_passthrough::proc_cycle(const rf_cycle &c)
 	cycle_list.num_cycles = new_count;
 }
 /*****************************************************************************/
+size_t cycle_passthrough::list_size(void) const
+{
+	return cycle_list.num_cycles;
+}
+/*****************************************************************************/
 cycle_passthrough::~cycle_passthrough(void)
 {
 	lib_rflow_free_list(&cycle_list);

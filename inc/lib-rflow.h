@@ -110,6 +110,8 @@ int lib_rflow_pop_cycles_replace_mem(
 );
 EXPORT
 int lib_rflow_end_history(struct lib_rflow_state *s);
+EXPORT
+size_t lib_rflow_cycle_list_size(const struct lib_rflow_state *s);
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/

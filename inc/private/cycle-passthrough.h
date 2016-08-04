@@ -43,6 +43,8 @@ public:
 	struct lib_rflow_list pop_cycle_list(
 		const struct lib_rflow_list *new_mem
 	);
+
+	size_t list_size(void) const;
 };
 /*****************************************************************************/
 #endif /* CYCLE_PASSTHROUGH_H_ */
