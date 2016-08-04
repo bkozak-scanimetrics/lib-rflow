@@ -50,7 +50,8 @@ public:
 	std::unique_ptr<cycle_processor> proc;
 	rf_state                         rstate;
 
-	lib_rflow_state(const struct lib_rflow_init *init);
+	lib_rflow_state(const struct lib_rflow_init *init,
+	                struct lib_rflow_matrix *m);
 };
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
@@ -91,18 +92,16 @@ static size_t string_matrix(const struct lib_rflow_matrix *m, char **cstr_out)
 	return cstr_copy(stream.str(), cstr_out);
 }
 /*****************************************************************************/
-static int build_matrix(struct lib_rflow_init *init)
+static int build_matrix(struct lib_rflow_init *init,
+                        struct lib_rflow_matrix **matrix)
 {
 	struct matrix_mem *m  = NULL;
 	size_t cells =   init->mode_data.matrix_data.amp_bin_count
 	               * init->mode_data.matrix_data.mean_bin_count;
 
-	if(init->mode_data.matrix_data._matrix != NULL) {
-		return 0;
-	}
-
-	m = (struct matrix_mem*)malloc(
-		sizeof(struct lib_rflow_matrix) + cells * sizeof(m->bins[0])
+	m = (struct matrix_mem*)calloc(
+		sizeof(struct lib_rflow_matrix) + cells * sizeof(m->bins[0]),
+		1
 	);
 	if(m == NULL) {
 		return 1;
@@ -117,12 +116,13 @@ static int build_matrix(struct lib_rflow_init *init)
 
 	m->matrix.bins            = m->bins;
 
-	init->mode_data.matrix_data._matrix = &m->matrix;
+	*matrix = &m->matrix;
 
 	return 0;
 }
 /*****************************************************************************/
-cycle_processor *build_processor(const struct lib_rflow_init *init)
+cycle_processor *build_processor(const struct lib_rflow_init *init,
+                                 struct lib_rflow_matrix *matrix)
 {
 	uint32_t mode = extract_mode(init);
 	custom_cycle_proc::processor proc;
@@ -133,7 +133,7 @@ cycle_processor *build_processor(const struct lib_rflow_init *init)
 	case LIB_RFLOW_MODE_PASSTHROUGH:
 		return new cycle_passthrough();
 	case LIB_RFLOW_MODE_MATRIX:
-		return new matrix_counter(init->mode_data.matrix_data._matrix);
+		return new matrix_counter(matrix);
 	case LIB_RFLOW_MODE_CUSTOM:
 		proc    = init->mode_data.custom_data.proc;
 		fini    = init->mode_data.custom_data.fini;
@@ -148,8 +148,9 @@ cycle_processor *build_processor(const struct lib_rflow_init *init)
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
-lib_rflow_state::lib_rflow_state(const struct lib_rflow_init *init)
-: mode{extract_mode(init)}, proc{build_processor(init)}, rstate{&*proc}
+lib_rflow_state::lib_rflow_state(const struct lib_rflow_init *init,
+                                  struct lib_rflow_matrix *m)
+: mode{extract_mode(init)}, proc{build_processor(init, m)}, rstate{&*proc}
 {
 }
 /******************************************************************************
@@ -159,16 +160,17 @@ extern "C"
 struct lib_rflow_state* lib_rflow_init(struct lib_rflow_init *init)
 {
 	uint32_t mode = extract_mode(init);
+	struct lib_rflow_matrix *matrix = NULL;
 
 	if(mode == LIB_RFLOW_MODE_MATRIX) {
-		if(build_matrix(init)) {
+		if(build_matrix(init, &matrix)) {
 			errno = ENOMEM;
 			goto fail;
 		}
 	}
 
 	try {
-		return new lib_rflow_state(init);
+		return new lib_rflow_state(init, matrix);
 	}  catch(std::bad_alloc& exc) {
 		errno = ENOMEM;
 		goto fail;

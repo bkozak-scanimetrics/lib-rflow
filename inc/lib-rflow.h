@@ -71,8 +71,6 @@ struct lib_rflow_init {
 			double amp_min;
 			double mean_bin_size;
 			double amp_bin_size;
-
-			struct lib_rflow_matrix *_matrix;
 		} matrix_data;
 		struct {
 			void (*proc)(const struct lib_rflow_cycle *, void*);
