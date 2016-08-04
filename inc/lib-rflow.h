@@ -39,6 +39,8 @@ extern "C" {
 #define LIB_RFLOW_MODE_PASSTHROUGH  0x00
 #define LIB_RFLOW_MODE_MATRIX       0x01
 #define LIB_RFLOW_MODE_CUSTOM       0x02
+
+#define LIB_RFLOW_EMPTY_LIST {NULL, 0, 0}
 /******************************************************************************
 *                                    TYPES                                    *
 ******************************************************************************/
