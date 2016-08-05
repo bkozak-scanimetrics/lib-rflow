@@ -26,6 +26,7 @@ extern "C" {
 ******************************************************************************/
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 /******************************************************************************
 *                                   DEFINES                                   *
 ******************************************************************************/
@@ -179,6 +180,16 @@ static inline unsigned* lib_rflow_bin_ptr(const struct lib_rflow_matrix *m,
 	amp_bin  = (size_t)((amp  - m->amp_min)  / m->amp_bin_size);
 
 	return &m->bins[mean_bin + m->mean_bin_count * amp_bin];
+}
+/*****************************************************************************/
+static inline unsigned lib_rflow_get_bin(
+	const struct lib_rflow_matrix *m, int amp_bin, int mean_bin
+)
+{
+	assert((amp_bin  >= 0) && (amp_bin  < m->amp_bin_count ));
+	assert((mean_bin >= 0) && (mean_bin < m->mean_bin_count));
+
+	return m->bins[mean_bin + m->mean_bin_count * amp_bin];
 }
 /*****************************************************************************/
 #ifdef __cplusplus
