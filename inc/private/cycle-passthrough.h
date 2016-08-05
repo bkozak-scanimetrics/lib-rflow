@@ -29,10 +29,8 @@
 class cycle_passthrough : public cycle_processor {
 private:
 	const size_t default_alloc;
-	size_t cycle_count;
-	size_t arr_size;
-	struct lib_rflow_cycle *cycles;
 	bool history_ended;
+	struct lib_rflow_list cycle_list;
 public:
 	cycle_passthrough(void);
 	cycle_passthrough(size_t default_alloc);
@@ -41,10 +39,12 @@ public:
 	void proc_cycle(const rf_cycle &c);
 	void end_history(void);
 
-	size_t pop_cycle_list(struct lib_rflow_cycle **p);
-	size_t pop_cycle_list(struct lib_rflow_cycle **p,
-	                      struct lib_rflow_cycle *new_mem,
-	                      size_t new_mem_size);
+	struct lib_rflow_list pop_cycle_list(void);
+	struct lib_rflow_list pop_cycle_list(
+		const struct lib_rflow_list *new_mem
+	);
+
+	size_t list_size(void) const;
 };
 /*****************************************************************************/
 #endif /* CYCLE_PASSTHROUGH_H_ */

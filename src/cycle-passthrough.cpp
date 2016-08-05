@@ -25,64 +25,49 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 /******************************************************************************
 *                              STATIC FUNCTIONS                               *
 ******************************************************************************/
-static struct lib_rflow_cycle *alloc_cycles(size_t size)
-{
-	struct lib_rflow_cycle *arr = (struct lib_rflow_cycle *)malloc(
-		size * sizeof(*arr)
-	);
-	if(arr == NULL) {
-		throw std::bad_alloc{};
-	}
-	return arr;
-}
-/*****************************************************************************/
-static struct lib_rflow_cycle *realloc_cycles(
-	size_t new_size, struct lib_rflow_cycle *p
-) {
-	void *new_mem = realloc((void*)p, new_size);
+static void realloc_cycles(size_t new_size, struct lib_rflow_list *l) {
+	void *new_mem = realloc((void*)l->cycles, new_size);
 	if(new_mem == NULL) {
 		throw std::bad_alloc{};
 	}
-	return (struct lib_rflow_cycle *)new_mem;
+	l->mem_size = new_size;
+	l->cycles   = (struct lib_rflow_cycle *)new_mem;
 }
 /******************************************************************************
 *                               PUBLIC METHODS                                *
 ******************************************************************************/
-size_t cycle_passthrough::pop_cycle_list(struct lib_rflow_cycle **p,
-                                         struct lib_rflow_cycle *new_mem,
-                                         size_t new_mem_size)
+struct lib_rflow_list cycle_passthrough::pop_cycle_list(
+	const struct lib_rflow_list *new_mem
+)
 {
-	size_t tmp_cycle_count = cycle_count;
-
-	if(cycle_count == 0) {
-		return 0;
-	}
-
-	*p     = cycles;
+	struct lib_rflow_list ret = cycle_list;
 
 	if(history_ended) {
-		cycles   = NULL;
-		arr_size = 0;
-	} else if(new_mem == NULL) {
-		cycles   = alloc_cycles(default_alloc);
-		arr_size = default_alloc;
-	} else {
-		assert(new_mem_size > 0);
-		cycles = new_mem;
-		arr_size = new_mem_size;
+		ret.cycles = NULL;
+	} else if(new_mem != NULL) {
+		memcpy(&cycle_list, new_mem, sizeof(cycle_list));
 	}
 
-	arr_size = 0;
-
-	return tmp_cycle_count;
+	return ret;
 }
 /*****************************************************************************/
-size_t cycle_passthrough::pop_cycle_list(struct lib_rflow_cycle **p)
+struct lib_rflow_list cycle_passthrough::pop_cycle_list(void)
 {
-	return pop_cycle_list(p, NULL, 0);
+	struct lib_rflow_list new_mem;
+
+	if(history_ended) {
+		return pop_cycle_list(NULL);
+	}
+
+	if(lib_rflow_alloc_list(default_alloc, &new_mem)) {
+		throw std::bad_alloc{};
+	}
+
+	return pop_cycle_list(&new_mem);
 }
 /*****************************************************************************/
 void cycle_passthrough::end_history(void)
@@ -93,28 +78,36 @@ void cycle_passthrough::end_history(void)
 void cycle_passthrough::proc_cycle(const rf_cycle &c)
 {
 	assert(!history_ended);
-	size_t new_count = cycle_count + 1;
-	if(new_count > arr_size) {
-		size_t new_size = arr_size * 2;
-		cycles    = realloc_cycles(new_size, cycles);
-		arr_size  = new_size;
+
+	size_t new_count = cycle_list.num_cycles + 1;
+	if(new_count > cycle_list.mem_size) {
+		size_t new_size = cycle_list.mem_size * 2;
+		realloc_cycles(new_size, &cycle_list);
 	}
 
-	cycles[cycle_count] = {c.get_cycle_start(), c.get_cycle_end()};
+	cycle_list.cycles[cycle_list.num_cycles] = {
+		c.get_cycle_start(), c.get_cycle_end()
+	};
 
-	cycle_count = new_count;
+	cycle_list.num_cycles = new_count;
+}
+/*****************************************************************************/
+size_t cycle_passthrough::list_size(void) const
+{
+	return cycle_list.num_cycles;
 }
 /*****************************************************************************/
 cycle_passthrough::~cycle_passthrough(void)
 {
-	free(cycles);
+	lib_rflow_free_list(&cycle_list);
 }
 /*****************************************************************************/
 cycle_passthrough::cycle_passthrough(size_t default_alloc)
-: default_alloc{default_alloc}, cycle_count{0}, arr_size{default_alloc},
-  cycles{alloc_cycles(default_alloc)}, history_ended{false}
+: default_alloc{default_alloc}, history_ended{false}
 {
-
+	if(lib_rflow_alloc_list(default_alloc, &cycle_list)) {
+		throw std::bad_alloc{};
+	}
 }
 /*****************************************************************************/
 cycle_passthrough::cycle_passthrough(void)
